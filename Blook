@@ -1,0 +1,2361 @@
+--[[
+رسالة من sedentoporblood (stephenofc)
+
+في الماضي كنت أعاني أيضًا مع لوليتا (كانت تكرهني تقريبًا)
+لكن هذا لا يلغي ما فعله زيرونيس، ما فعله كان خطأ ويستحق العواقب
+لحسن الحظ أن بيانات لوليتا التي تسربت في أكتوبر/نوفمبر لم تصل إليه، لأنه بالتأكيد كان سيفعل الأسوأ بها!!!!!
+لوليتا إذا كنت تقرئين هذا أريد أن أعتذر عما فعلته في الماضي (كان بيننا سوء تفاهم وكل شيء)، منذ أن تم تسريب بياناتي في SHNmax لم أعد كما كنت والآن لا أثق كثيرًا في الآخرين.
+
+بواسطة: stephenofc
+]]
+
+local Libary = loadstring(game:HttpGet("https://raw.githubusercontent.com/BRENOPOOF/slapola/refs/heads/main/Main.txt"))()
+workspace.FallenPartsDestroyHeight = -math.huge
+
+local Window = Libary:MakeWindow({
+    Title = "Zyronis Hub",
+    SubTitle = "بواسطة Zyronis",
+    LoadText = "جاري تحميل Zyronis Hub",
+    Flags = "ZyronisHub"
+})
+
+-- إضافة صورة الخلفية
+local backgroundId = "rbxassetid://96954312451217"
+local screenGui = game.Players.LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("ZyronisHub")
+if screenGui then
+    local mainFrame = screenGui:FindFirstChildOfClass("Frame")
+    if mainFrame then
+        mainFrame.BackgroundImage = backgroundId
+        mainFrame.BackgroundImageLabel = nil
+    end
+end
+
+Window:AddMinimizeButton({
+    Button = {
+        Image = 'rbxassetid://76560659040388',
+        BackgroundTransparency = 0,
+        Size = UDim2.new(0, 35, 0, 35),
+    },
+    Corner = {
+        CornerRadius = UDim.new(0, 100),
+    },
+})
+
+-- ==================== تبويب المعلومات ====================
+local InfoTab = Window:MakeTab({ Title = "معلومات", Icon = "rbxassetid://15309138473" })
+
+InfoTab:AddSection({ "معلومات السكربت" })
+InfoTab:AddParagraph({ "اسم السكربت:", "سہكہربہتہ ابہو سہودا" })
+InfoTab:AddParagraph({ "اسم المطور:", "آلُـِـِِـِِِـِِـِـمـْـْْـْطُـٌـٌٌـٌوُر نـِِـِـوُحـًـًًـًًًـًًـًـ" })
+
+InfoTab:AddSection({ "إعادة الانضمام" })
+InfoTab:AddButton({
+    Name = "إعادة الانضمام",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
+    end
+})
+
+-- ==================== تبويب تخريب على اللاعبين ====================
+local TrollTab = Window:MakeTab({ Title = "تخريب على اللاعبين", Icon = "skull" })
+
+-- ========== المتغيرات العامة ==========
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local cam = workspace.CurrentCamera
+
+local selectedPlayerName = nil
+local methodKill = nil
+getgenv().Target = nil
+
+-- ========== دوال مساعدة ==========
+local function getPlayerList()
+    local list = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            table.insert(list, plr.Name)
+        end
+    end
+    return list
+end
+
+-- ========== دوال القتل والسحب الأساسية (مأخوذة من السكربت الأصلي) ==========
+local function cleanupCouch()
+    local char = LocalPlayer.Character
+    if char then
+        local couch = char:FindFirstChild("Zyronis.Couch") or LocalPlayer.Backpack:FindFirstChild("Zyronis.Couch")
+        if couch then couch:Destroy() end
+    end
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer("ClearAllTools")
+end
+
+-- دالة القتل بالكنبة الأصلية
+local function KillPlayerCouch()
+    if not selectedPlayerName then
+        warn("خطأ: لم يتم اختيار لاعب")
+        return
+    end
+    local target = Players:FindFirstChild(selectedPlayerName)
+    if not target or not target.Character then
+        warn("خطأ: اللاعب المستهدف غير موجود أو ليس لديه شخصية")
+        return
+    end
+    local char = LocalPlayer.Character
+    if not char then
+        warn("خطأ: شخصية اللاعب المحلي غير موجودة")
+        return
+    end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local tRoot = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+    if not hum or not root or not tRoot then
+        warn("خطأ: الأجزاء المطلوبة غير موجودة")
+        return
+    end
+    local originalPos = root.Position 
+    local sitPos = Vector3.new(145.51, -350.09, 21.58)
+
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer("ClearAllTools")
+    task.wait(0.2)
+    ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    task.wait(0.3)
+    local tool = LocalPlayer.Backpack:FindFirstChild("Couch")
+    if tool then tool.Parent = char end
+    task.wait(0.1)
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+    task.wait(0.1)
+    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    hum.PlatformStand = false
+    cam.CameraSubject = target.Character:FindFirstChild("Head") or tRoot or hum
+    local align = Instance.new("BodyPosition")
+    align.Name = "BringPosition"
+    align.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    align.D = 10
+    align.P = 30000
+    align.Position = root.Position
+    align.Parent = tRoot
+    task.spawn(function()
+        local angle = 0
+        local startTime = tick()
+        while tick() - startTime < 5 and target and target.Character and target.Character:FindFirstChildOfClass("Humanoid") do
+            local tHum = target.Character:FindFirstChildOfClass("Humanoid")
+            if not tHum or tHum.Sit then break end
+            local hrp = target.Character.HumanoidRootPart
+            local adjustedPos = hrp.Position + (hrp.Velocity / 1.5)
+            angle = angle + 50
+            root.CFrame = CFrame.new(adjustedPos + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(angle), 0, 0)
+            align.Position = root.Position + Vector3.new(2, 0, 0)
+            task.wait()
+        end
+        align:Destroy()
+        hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        hum.PlatformStand = false
+        cam.CameraSubject = hum
+        for _, p in pairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.Velocity = Vector3.zero
+                p.RotVelocity = Vector3.zero
+            end
+        end
+        task.wait(0.1)
+        root.CFrame = CFrame.new(sitPos)
+        task.wait(0.3)
+        local tool = char:FindFirstChild("Couch")
+        if tool then tool.Parent = LocalPlayer.Backpack end
+        task.wait(0.01)
+        ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+        task.wait(0.2)
+        root.CFrame = CFrame.new(originalPos)
+    end)
+end
+
+-- دالة سحب اللاعب الأصلية
+local function BringPlayerLLL()
+    if not selectedPlayerName then
+        warn("خطأ: لم يتم اختيار لاعب")
+        return
+    end
+    local target = Players:FindFirstChild(selectedPlayerName)
+    if not target or not target.Character then
+        warn("خطأ: اللاعب المستهدف غير موجود أو ليس لديه شخصية")
+        return
+    end
+    local char = LocalPlayer.Character
+    if not char then
+        warn("خطأ: شخصية اللاعب المحلي غير موجودة")
+        return
+    end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local tRoot = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+    if not hum or not root or not tRoot then
+        warn("خطأ: الأجزاء المطلوبة غير موجودة")
+        return
+    end
+    local originalPos = root.Position
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer("ClearAllTools")
+    task.wait(0.2)
+    ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    task.wait(0.3)
+    local tool = LocalPlayer.Backpack:FindFirstChild("Couch")
+    if tool then tool.Parent = char end
+    task.wait(0.1)
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+    task.wait(0.1)
+    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    hum.PlatformStand = false
+    cam.CameraSubject = target.Character:FindFirstChild("Head") or tRoot or hum
+    local align = Instance.new("BodyPosition")
+    align.Name = "BringPosition"
+    align.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    align.D = 10
+    align.P = 30000
+    align.Position = root.Position
+    align.Parent = tRoot
+    task.spawn(function()
+        local angle = 0
+        local startTime = tick()
+        while tick() - startTime < 5 and target and target.Character and target.Character:FindFirstChildOfClass("Humanoid") do
+            local tHum = target.Character:FindFirstChildOfClass("Humanoid")
+            if not tHum or tHum.Sit then break end
+            local hrp = target.Character.HumanoidRootPart
+            local adjustedPos = hrp.Position + (hrp.Velocity / 1.5)
+            angle = angle + 50
+            root.CFrame = CFrame.new(adjustedPos + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(angle), 0, 0)
+            align.Position = root.Position + Vector3.new(2, 0, 0)
+            task.wait()
+        end
+        align:Destroy()
+        hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        hum.PlatformStand = false
+        cam.CameraSubject = hum
+        for _, p in pairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.Velocity = Vector3.zero
+                p.RotVelocity = Vector3.zero
+            end
+        end
+        task.wait(0.1)
+        root.Anchored = true
+        root.CFrame = CFrame.new(originalPos)
+        task.wait(0.001)
+        root.Anchored = false
+        task.wait(0.7)
+        local tool = char:FindFirstChild("Couch")
+        if tool then tool.Parent = LocalPlayer.Backpack end
+        task.wait(0.001)
+        ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    end)
+end
+
+-- دالة BringWithCouch (المطورة للسحب بالكنبة)
+local function BringWithCouch()
+    local targetPlayer = Players:FindFirstChild(getgenv().Target)
+    if not targetPlayer then
+        warn("خطأ: لم يتم اختيار لاعب مستهدف")
+        return
+    end
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        warn("خطأ: اللاعب المستهدف ليس لديه شخصية أو HumanoidRootPart")
+        return
+    end
+    ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
+    task.wait(0.2)
+    ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    task.wait(0.3)
+    local couch = LocalPlayer.Backpack:WaitForChild("Couch", 2)
+    if not couch then
+        warn("خطأ: الكنبة غير موجودة في الحقيبة")
+        return
+    end
+    couch.Name = "Zyronis.Couch"
+    local seat1 = couch:FindFirstChild("Seat1")
+    local seat2 = couch:FindFirstChild("Seat2")
+    local handle = couch:FindFirstChild("Handle")
+    if seat1 and seat2 and handle then
+        seat1.Disabled = true
+        seat2.Disabled = true
+        handle.Name = "Handle "
+    else
+        warn("خطأ: أجزاء الكنبة غير موجودة")
+        return
+    end
+    couch.Parent = LocalPlayer.Character
+    local tet = Instance.new("BodyVelocity", seat1)
+    tet.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    tet.P = 1250
+    tet.Velocity = Vector3.new(0, 0, 0)
+    tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+    repeat
+        for m = 1, 35 do
+            local pos = { x = 0, y = 0, z = 0 }
+            local tRoot = targetPlayer.Character and targetPlayer.Character.HumanoidRootPart
+            if not tRoot then break end
+            pos.x = tRoot.Position.X + (tRoot.Velocity.X / 2)
+            pos.y = tRoot.Position.Y + (tRoot.Velocity.Y / 2)
+            pos.z = tRoot.Position.Z + (tRoot.Velocity.Z / 2)
+            seat1.CFrame = CFrame.new(Vector3.new(pos.x, pos.y, pos.z)) * CFrame.new(-2, 2, 0)
+            task.wait()
+        end
+        tet:Destroy()
+        couch.Parent = LocalPlayer.Backpack
+        task.wait()
+        couch:FindFirstChild("Handle ").Name = "Handle"
+        task.wait(0.2)
+        couch.Parent = LocalPlayer.Character
+        task.wait()
+        couch.Parent = LocalPlayer.Backpack
+        couch.Handle.Name = "Handle "
+        task.wait(0.2)
+        couch.Parent = LocalPlayer.Character
+        tet = Instance.new("BodyVelocity", seat1)
+        tet.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        tet.P = 1250
+        tet.Velocity = Vector3.new(0, 0, 0)
+        tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+    until targetPlayer.Character and targetPlayer.Character.Humanoid and targetPlayer.Character.Humanoid.Sit == true
+    task.wait()
+    tet:Destroy()
+    couch.Parent = LocalPlayer.Backpack
+    task.wait()
+    couch:FindFirstChild("Handle ").Name = "Handle"
+    task.wait(0.3)
+    couch.Parent = LocalPlayer.Character
+    task.wait(0.3)
+    couch.Grip = CFrame.new(Vector3.new(0, 0, 0))
+    task.wait(0.3)
+    ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
+end
+
+-- دالة KillWithCouch (المطورة للقتل بالكنبة)
+local function KillWithCouch()
+    local targetPlayer = Players:FindFirstChild(getgenv().Target)
+    if not targetPlayer then
+        warn("خطأ: لم يتم اختيار لاعب مستهدف")
+        return
+    end
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        warn("خطأ: اللاعب المستهدف ليس لديه شخصية أو HumanoidRootPart")
+        return
+    end
+    ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
+    task.wait(0.2)
+    ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    task.wait(0.3)
+    local couch = LocalPlayer.Backpack:WaitForChild("Couch", 2)
+    if not couch then
+        warn("خطأ: الكنبة غير موجودة في الحقيبة")
+        return
+    end
+    couch.Name = "Zyronis.Couch"
+    local seat1 = couch:FindFirstChild("Seat1")
+    local seat2 = couch:FindFirstChild("Seat2")
+    local handle = couch:FindFirstChild("Handle")
+    if seat1 and seat2 and handle then
+        seat1.Disabled = true
+        seat2.Disabled = true
+        handle.Name = "Handle "
+    else
+        warn("خطأ: أجزاء الكنبة غير موجودة")
+        return
+    end
+    couch.Parent = LocalPlayer.Character
+    local tet = Instance.new("BodyVelocity", seat1)
+    tet.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    tet.P = 1250
+    tet.Velocity = Vector3.new(0, 0, 0)
+    tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+    repeat
+        for m = 1, 35 do
+            local pos = { x = 0, y = 0, z = 0 }
+            local tRoot = targetPlayer.Character and targetPlayer.Character.HumanoidRootPart
+            if not tRoot then break end
+            pos.x = tRoot.Position.X + (tRoot.Velocity.X / 2)
+            pos.y = tRoot.Position.Y + (tRoot.Velocity.Y / 2)
+            pos.z = tRoot.Position.Z + (tRoot.Velocity.Z / 2)
+            seat1.CFrame = CFrame.new(Vector3.new(pos.x, pos.y, pos.z)) * CFrame.new(-2, 2, 0)
+            task.wait()
+        end
+        tet:Destroy()
+        couch.Parent = LocalPlayer.Backpack
+        task.wait()
+        couch:FindFirstChild("Handle ").Name = "Handle"
+        task.wait(0.2)
+        couch.Parent = LocalPlayer.Character
+        task.wait()
+        couch.Parent = LocalPlayer.Backpack
+        couch.Handle.Name = "Handle "
+        task.wait(0.2)
+        couch.Parent = LocalPlayer.Character
+        tet = Instance.new("BodyVelocity", seat1)
+        tet.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        tet.P = 1250
+        tet.Velocity = Vector3.new(0, 0, 0)
+        tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+    until targetPlayer.Character and targetPlayer.Character.Humanoid and targetPlayer.Character.Humanoid.Sit == true
+    task.wait()
+    couch.Parent = LocalPlayer.Backpack
+    seat1.CFrame = CFrame.new(Vector3.new(9999, -450, 9999))
+    seat2.CFrame = CFrame.new(Vector3.new(9999, -450, 9999))
+    couch.Parent = LocalPlayer.Character
+    task.wait(0.1)
+    couch.Parent = LocalPlayer.Backpack
+    task.wait(2)
+    local bv = seat1:FindFirstChild("#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W")
+    if bv then bv:Destroy() end
+    ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
+end
+
+-- ========== دالة houseBanKill (قتل باند البيت) ==========
+local function houseBanKill()
+    if not selectedPlayerName then
+        print("لم يتم اختيار أي لاعب!")
+        return
+    end
+    local Player = game.Players.LocalPlayer
+    local Backpack = Player.Backpack
+    local Character = Player.Character
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+    local Houses = game.Workspace:FindFirstChild("001_Lots")
+    local OldPos = RootPart.CFrame
+    local Angles = 0
+    local Vehicles = Workspace.Vehicles
+    local Pos
+    function Check()
+        if Player and Character and Humanoid and RootPart and Vehicles then
+            return true
+        else
+            return false
+        end
+    end
+    local selectedPlayer = game.Players:FindFirstChild(selectedPlayerName)
+    if selectedPlayer and selectedPlayer.Character then
+        if Check() then
+            local House = Houses:FindFirstChild(Player.Name .. "House")
+            if not House then
+                local EHouse
+                local availableHouses = {}
+                for _, Lot in pairs(Houses:GetChildren()) do
+                    if Lot.Name == "For Sale" then
+                        for _, num in pairs(Lot:GetDescendants()) do
+                            if num:IsA("NumberValue") and num.Name == "Number" and num.Value < 25 and num.Value > 10 then
+                                table.insert(availableHouses, {Lot = Lot, Number = num.Value})
+                                break
+                            end
+                        end
+                    end
+                end
+                if #availableHouses > 0 then
+                    local randomHouse = availableHouses[math.random(1, #availableHouses)]
+                    EHouse = randomHouse.Lot
+                    local houseNumber = randomHouse.Number
+                    local BuyDetector = EHouse:FindFirstChild("BuyHouse")
+                    Pos = BuyDetector.Position
+                    if BuyDetector and BuyDetector:IsA("BasePart") then
+                        RootPart.CFrame = BuyDetector.CFrame + Vector3.new(0, -6, 0)
+                        task.wait(0.5)
+                        local ClickDetector = BuyDetector:FindFirstChild("ClickDetector")
+                        if ClickDetector then
+                            fireclickdetector(ClickDetector)
+                        end
+                    end
+                    task.wait(0.5)
+                    local args = { houseNumber, "056_House" }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Lot:BuildProperty"):FireServer(unpack(args))
+                else
+                    print("لا توجد منازل متاحة للشراء!")
+                    return
+                end
+            end
+            task.wait(0.5)
+            local PreHouse = Houses:FindFirstChild(Player.Name .. "House")
+            if PreHouse then
+                task.wait(0.5)
+                local Number
+                for i, x in pairs(PreHouse:GetDescendants()) do
+                    if x.Name == "Number" and x:IsA("NumberValue") then
+                        Number = x
+                    end
+                end
+                task.wait(0.5)
+                game:GetService("ReplicatedStorage").RE:FindFirstChild("1Gettin1gHous1e"):FireServer("PickingCustomHouse", "049_House", Number.Value)
+            end
+            task.wait(0.5)
+            local PCar = Vehicles:FindFirstChild(Player.Name .. "Car")
+            if not PCar then
+                if Check() then
+                    RootPart.CFrame = CFrame.new(1118.81, 75.998, -1138.61)
+                    task.wait(0.5)
+                    game:GetService("ReplicatedStorage").RE:FindFirstChild("1Ca1r"):FireServer("PickingCar", "SchoolBus")
+                    task.wait(0.5)
+                    local PCar = Vehicles:FindFirstChild(Player.Name .. "Car")
+                    task.wait(0.5)
+                    local Seat = PCar:FindFirstChild("Body") and PCar.Body:FindFirstChild("VehicleSeat")
+                    if Seat then
+                        repeat
+                            task.wait()
+                            RootPart.CFrame = Seat.CFrame * CFrame.new(0, math.random(-1, 1), 0)
+                        until Humanoid.Sit
+                    end
+                end
+            end
+            task.wait(0.5)
+            local PCar = Vehicles:FindFirstChild(Player.Name .. "Car")
+            if PCar then
+                if not Humanoid.Sit then
+                    local Seat = PCar:FindFirstChild("Body") and PCar.Body:FindFirstChild("VehicleSeat")
+                    if Seat then
+                        repeat
+                            task.wait()
+                            RootPart.CFrame = Seat.CFrame * CFrame.new(0, math.random(-1, 1), 0)
+                        until Humanoid.Sit
+                    end
+                end
+                local Target = selectedPlayer
+                local TargetC = Target.Character
+                local TargetH = TargetC:FindFirstChildOfClass("Humanoid")
+                local TargetRP = TargetC:FindFirstChild("HumanoidRootPart")
+                if TargetC and TargetH and TargetRP then
+                    if not TargetH.Sit then
+                        while not TargetH.Sit do
+                            task.wait()
+                            local Fling = function(alvo, pos, angulo)
+                                PCar:SetPrimaryPartCFrame(CFrame.new(alvo.Position) * pos * angulo)
+                            end
+                            Angles = Angles + 100
+                            Fling(TargetRP, CFrame.new(0, 1.5, 0) + TargetH.MoveDirection * TargetRP.Velocity.Magnitude / 1.10, CFrame.Angles(math.rad(Angles), 0, 0))
+                            Fling(TargetRP, CFrame.new(0, -1.5, 0) + TargetH.MoveDirection * TargetRP.Velocity.Magnitude / 1.10, CFrame.Angles(math.rad(Angles), 0, 0))
+                            Fling(TargetRP, CFrame.new(2.25, 1.5, -2.25) + TargetH.MoveDirection * TargetRP.Velocity.Magnitude / 1.10, CFrame.Angles(math.rad(Angles), 0, 0))
+                            Fling(TargetRP, CFrame.new(-2.25, -1.5, 2.25) + TargetH.MoveDirection * TargetRP.Velocity.Magnitude / 1.10, CFrame.Angles(math.rad(Angles), 0, 0))
+                            Fling(TargetRP, CFrame.new(0, 1.5, 0) + TargetH.MoveDirection * TargetRP.Velocity.Magnitude / 1.10, CFrame.Angles(math.rad(Angles), 0, 0))
+                            Fling(TargetRP, CFrame.new(0, -1.5, 0) + TargetH.MoveDirection * TargetRP.Velocity.Magnitude / 1.10, CFrame.Angles(math.rad(Angles), 0, 0))
+                        end
+                        task.wait(0.2)
+                        local House = Houses:FindFirstChild(Player.Name .. "House")
+                        PCar:SetPrimaryPartCFrame(CFrame.new(House.HouseSpawnPosition.Position))
+                        task.wait(0.2)
+                        local pedro = Region3.new(game.Players.LocalPlayer.Character.HumanoidRootPart.Position - Vector3.new(30, 30, 30), game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(30, 30, 30))
+                        local a = workspace:FindPartsInRegion3(pedro, game.Players.LocalPlayer.Character.HumanoidRootPart, math.huge)
+                        for i, v in pairs(a) do
+                            if v.Name == "HumanoidRootPart" then
+                                local b = game:GetService("Players"):FindFirstChild(v.Parent.Name)
+                                local args = { [1] = "BanPlayerFromHouse", [2] = b, [3] = v.Parent }
+                                game:GetService("ReplicatedStorage").RE:FindFirstChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+                                local args = { [1] = "DeleteAllVehicles" }
+                                game:GetService("ReplicatedStorage").RE:FindFirstChild("1Ca1r"):FireServer(unpack(args))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- ========== دوال تطيير القارب ==========
+local function FlingBoat(targetPlayerName)
+    if not targetPlayerName then
+        warn("لم يتم اختيار لاعب")
+        return
+    end
+    local targetPlayer = Players:FindFirstChild(targetPlayerName)
+    if not targetPlayer then
+        warn("اللاعب غير موجود")
+        return
+    end
+    local Character = LocalPlayer.Character
+    local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+    local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+    local Vehicles = workspace:FindFirstChild("Vehicles")
+    if not Humanoid or not RootPart then
+        warn("Humanoid أو RootPart غير صالح")
+        return
+    end
+    local function spawnBoat()
+        RootPart.CFrame = CFrame.new(1754, -2, 58)
+        task.wait(0.5)
+        ReplicatedStorage.RE:FindFirstChild("1Ca1r"):FireServer("PickingBoat", "MilitaryBoatFree")
+        task.wait(1)
+        return Vehicles:FindFirstChild(LocalPlayer.Name.."Car")
+    end
+    local PCar = Vehicles:FindFirstChild(LocalPlayer.Name.."Car") or spawnBoat()
+    if not PCar then
+        warn("فشل في استدعاء القارب")
+        return
+    end
+    local Seat = PCar:FindFirstChild("Body") and PCar.Body:FindFirstChild("VehicleSeat")
+    if not Seat then
+        warn("لم يتم العثور على المقعد")
+        return
+    end
+    repeat
+        task.wait(0.1)
+        RootPart.CFrame = Seat.CFrame * CFrame.new(0, 1, 0)
+    until Humanoid.SeatPart == Seat
+    print("تم استدعاء القارب!")
+    local TargetC = targetPlayer.Character
+    local TargetH = TargetC and TargetC:FindFirstChildOfClass("Humanoid")
+    local TargetRP = TargetC and TargetC:FindFirstChild("HumanoidRootPart")
+    if not TargetRP or not TargetH then
+        warn("Humanoid أو RootPart للهدف غير موجود")
+        return
+    end
+    local Spin = Instance.new("BodyAngularVelocity")
+    Spin.Name = "Spinning"
+    Spin.Parent = PCar.PrimaryPart
+    Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+    Spin.AngularVelocity = Vector3.new(0, 369, 0)
+    print("التطيير نشط!")
+    local function moveCar(TargetRP, offset)
+        if PCar and PCar.PrimaryPart then
+            PCar:SetPrimaryPartCFrame(CFrame.new(TargetRP.Position + offset))
+        end
+    end
+    task.spawn(function()
+        while PCar and PCar.Parent and TargetRP and TargetRP.Parent do
+            task.wait(0.01)
+            moveCar(TargetRP, Vector3.new(0, 1, 0))
+            moveCar(TargetRP, Vector3.new(0, -2.25, 5))
+            moveCar(TargetRP, Vector3.new(0, 2.25, 0.25))
+            moveCar(TargetRP, Vector3.new(-2.25, -1.5, 2.25))
+            moveCar(TargetRP, Vector3.new(0, 1.5, 0))
+            moveCar(TargetRP, Vector3.new(0, -1.5, 0))
+            if PCar and PCar.PrimaryPart then
+                local Rotation = CFrame.Angles(
+                    math.rad(math.random(-369, 369)),
+                    math.rad(math.random(-369, 369)),
+                    math.rad(math.random(-369, 369))
+                )
+                PCar:SetPrimaryPartCFrame(CFrame.new(TargetRP.Position + Vector3.new(0, 1.5, 0)) * Rotation)
+            end
+        end
+        if Spin and Spin.Parent then
+            Spin:Destroy()
+            print("تم إيقاف التطيير")
+        end
+    end)
+end
+
+local function StopBoatFling()
+    local Player = LocalPlayer
+    local Character = Player.Character
+    local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+    local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+    local Vehicles = workspace:FindFirstChild("Vehicles")
+    if not RootPart or not Humanoid then
+        warn("لم يتم العثور على RootPart أو Humanoid!")
+        return
+    end
+    Humanoid.PlatformStand = true
+    print("تم شل حركة اللاعب لتقليل تأثير الدوران.")
+    for _, obj in pairs(RootPart:GetChildren()) do
+        if obj:IsA("BodyAngularVelocity") or obj:IsA("BodyVelocity") then
+            obj:Destroy()
+        end
+    end
+    print("تم إزالة قوى الدوران من اللاعب.")
+    ReplicatedStorage.RE:FindFirstChild("1Ca1r"):FireServer("DeleteAllVehicles")
+    task.wait(0.5)
+    local PCar = Vehicles and Vehicles:FindFirstChild(Player.Name.."Car")
+    if PCar and PCar.PrimaryPart then
+        for _, obj in pairs(PCar.PrimaryPart:GetChildren()) do
+            if obj:IsA("BodyAngularVelocity") or obj:IsA("BodyVelocity") then
+                obj:Destroy()
+            end
+        end
+        print("تم إزالة الدوران من القارب.")
+    end
+    task.wait(1)
+    local safePos = Vector3.new(0, 1000, 0)
+    local bp = Instance.new("BodyPosition", RootPart)
+    bp.Position = safePos
+    bp.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    local bg = Instance.new("BodyGyro", RootPart)
+    bg.CFrame = RootPart.CFrame
+    bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    print("تم تثبيت اللاعب في موقع آمن.")
+    task.wait(3)
+    bp:Destroy()
+    bg:Destroy()
+    Humanoid.PlatformStand = false
+    print("تم تحرير اللاعب، أصبح في موقع آمن.")
+end
+
+-- ========== دوال تطاير تلقائي (أوتو فلينج) ==========
+local flingActive = false
+local function StartAutoFling(target)
+    if not target or not target.Character then return end
+    flingActive = true
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local tRoot = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+    if not root or not tRoot then return end
+    local char = LocalPlayer.Character
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local original = root.CFrame
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer("ClearAllTools")
+    task.wait(0.2)
+    ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    task.wait(0.3)
+    local tool = LocalPlayer.Backpack:FindFirstChild("Couch")
+    if tool then tool.Parent = char end
+    task.wait(0.1)
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+    task.wait(0.25)
+    workspace.FallenPartsDestroyHeight = 0/0
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = "FlingForce"
+    bv.Velocity = Vector3.new(9e8, 9e8, 9e8)
+    bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bv.Parent = root
+    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    hum.PlatformStand = false
+    cam.CameraSubject = target.Character:FindFirstChild("Head") or tRoot or hum
+    task.spawn(function()
+        local angle = 0
+        while flingActive and target and target.Character and target.Character:FindFirstChildOfClass("Humanoid") do
+            local tHum = target.Character:FindFirstChildOfClass("Humanoid")
+            if tHum.Sit then break end
+            angle = angle + 50
+            local hrp = target.Character.HumanoidRootPart
+            local pos = hrp.Position + (hrp.Velocity / 1.5)
+            root.CFrame = CFrame.new(pos) * CFrame.Angles(math.rad(angle), 0, 0)
+            root.Velocity = Vector3.new(9e8, 9e8, 9e8)
+            root.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+            task.wait()
+        end
+        flingActive = false
+        bv:Destroy()
+        hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        hum.PlatformStand = false
+        root.CFrame = original
+        cam.CameraSubject = hum
+        for _, p in pairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.Velocity = Vector3.zero
+                p.RotVelocity = Vector3.zero
+            end
+        end
+        hum:UnequipTools()
+        ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    end)
+end
+
+local function StopAutoFling()
+    flingActive = false
+end
+
+-- ========== دوال تطيير بالكرة ==========
+local function FlingBall(targetPlayer)
+    if not targetPlayer then return end
+    local player = LocalPlayer
+    local character = player.Character
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    local backpack = player:FindFirstChild("Backpack")
+    local ServerBalls = workspace.WorkspaceCom:WaitForChild("001_SoccerBalls")
+    local function GetBall()
+        if not backpack:FindFirstChild("SoccerBall") then
+            ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall")
+        end
+        repeat task.wait() until backpack:FindFirstChild("SoccerBall")
+        backpack.SoccerBall.Parent = character
+        repeat task.wait() until ServerBalls:FindFirstChild("Soccer" .. player.Name)
+        character.SoccerBall.Parent = backpack
+        return ServerBalls:FindFirstChild("Soccer" .. player.Name)
+    end
+    local Ball = ServerBalls:FindFirstChild("Soccer" .. player.Name) or GetBall()
+    Ball.CanCollide = false
+    Ball.Massless = true
+    Ball.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0, 0)
+    if targetPlayer ~= player then
+        local tchar = targetPlayer.Character
+        if tchar and tchar:FindFirstChild("HumanoidRootPart") and tchar:FindFirstChild("Humanoid") then
+            local troot = tchar.HumanoidRootPart
+            local thum = tchar.Humanoid
+            if Ball:FindFirstChildWhichIsA("BodyVelocity") then
+                Ball:FindFirstChildWhichIsA("BodyVelocity"):Destroy()
+            end
+            local bv = Instance.new("BodyVelocity")
+            bv.Name = "FlingPower"
+            bv.Velocity = Vector3.new(9e8, 9e8, 9e8)
+            bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bv.P = 9e900
+            bv.Parent = Ball
+            workspace.CurrentCamera.CameraSubject = thum
+            repeat
+                if troot.Velocity.Magnitude > 0 then
+                    local pos = troot.Position + (troot.Velocity / 1.5)
+                    Ball.CFrame = CFrame.new(pos)
+                    Ball.Orientation = Ball.Orientation + Vector3.new(45, 60, 30)
+                else
+                    for i, v in pairs(tchar:GetChildren()) do
+                        if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
+                            Ball.CFrame = v.CFrame
+                            task.wait(1/6000)
+                        end
+                    end
+                end
+                task.wait(1/6000)
+            until troot.Velocity.Magnitude > 1000 or thum.Health <= 0 or not tchar:IsDescendantOf(workspace) or targetPlayer.Parent ~= Players
+            workspace.CurrentCamera.CameraSubject = humanoid
+        end
+    end
+end
+
+-- ========== دوال القتل الجماعي ==========
+local function KillAllBus()
+    local PlayersList = Players:GetPlayers()
+    for _, plr in ipairs(PlayersList) do
+        if plr ~= LocalPlayer then
+            local originalPos = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.CFrame
+            local function GetBus()
+                local vehicles = workspace:FindFirstChild("Vehicles")
+                if vehicles then
+                    return vehicles:FindFirstChild(LocalPlayer.Name.."Car")
+                end
+                return nil
+            end
+            local bus = GetBus()
+            if not bus then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1118.81, 75.998, -1138.61)
+                task.wait(0.5)
+                ReplicatedStorage.RE:FindFirstChild("1Ca1r"):FireServer("PickingCar", "SchoolBus")
+                task.wait(1)
+                bus = GetBus()
+            end
+            if bus then
+                local seat = bus:FindFirstChild("Body") and bus.Body:FindFirstChild("VehicleSeat")
+                if seat and LocalPlayer.Character.Humanoid and not LocalPlayer.Character.Humanoid.Sit then
+                    repeat
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = seat.CFrame * CFrame.new(0, 2, 0)
+                        task.wait()
+                    until LocalPlayer.Character.Humanoid.Sit or not bus.Parent
+                end
+            end
+            task.spawn(function()
+                while plr.Character and plr.Character:FindFirstChild("Humanoid") and not plr.Character.Humanoid.Sit do
+                    task.wait(0.1)
+                end
+                if bus then
+                    bus:SetPrimaryPartCFrame(CFrame.new(145.51, -374.09, 21.58))
+                    task.wait(0.2)
+                    local function simulateJump()
+                        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+                        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+                    end
+                    simulateJump()
+                    task.wait(0.5)
+                    if originalPos then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = originalPos
+                    end
+                    ReplicatedStorage.RE:FindFirstChild("1Ca1r"):FireServer("DeleteAllVehicles")
+                end
+            end)
+            task.wait(0.5)
+        end
+    end
+end
+
+local function KillAllHouseBan()
+    local PlayersList = Players:GetPlayers()
+    local originalTarget = selectedPlayerName
+    for _, plr in ipairs(PlayersList) do
+        if plr ~= LocalPlayer then
+            selectedPlayerName = plr.Name
+            getgenv().Target = plr.Name
+            houseBanKill()
+            task.wait(2)
+        end
+    end
+    selectedPlayerName = originalTarget
+    getgenv().Target = originalTarget
+end
+
+local function FlingBoatAll()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            FlingBoat(plr.Name)
+            task.wait(0.5)
+        end
+    end
+end
+
+local function BringAllCouch()
+    local args = { [1] = "ClearAllTools" }
+    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+    wait(0.2)
+    toolselcted = "Couch"
+    dupeamot = 25
+    picktoolremote = game:GetService("ReplicatedStorage").RE:FindFirstChild("1Too1l")
+    cleartoolremote = game:GetService("ReplicatedStorage").RE:FindFirstChild("1Clea1rTool1s")
+    game:GetService("StarterGui"):SetCore("SendNotification",{Title="تضاعف",Text="لا تضغط على أي شيء أثناء التضاعف.", Button1 = "فهمت",Duration=5})
+    game:GetService("StarterGui"):SetCore("SendNotification",{Title="سكربت التضاعف",Text="لأنه سيكسر السكربت وستحتاج إلى إعادة الانضمام.", Button1 = "فهمت",Duration=5})
+    duping = true
+    oldcf = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+    if game.Players.LocalPlayer.Character.Humanoid.Sit == true then
+        task.wait()
+        game.Players.LocalPlayer.Character.Humanoid.Sit = false
+    end
+    wait(0.1)
+    if game:GetService("Workspace"):FindFirstChild("Camera") then
+        game:GetService("Workspace"):FindFirstChild("Camera"):Destroy()
+    end
+    for m=1,2 do
+        task.wait()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(999999999.414, -490, 999999999.414, 0.974360406, -0.175734088, 0.14049761, -0.133441404, 0.0514053069, 0.989722729, -0.181150302, -0.983094692, 0.0266370922)
+    end
+    task.wait(0.2)
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = true
+    wait(0.5)
+    for aidj,afh in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+        if afh.Name == toolselcted == false then
+            if afh:IsA("Tool") then
+                afh.Parent = game.Players.LocalPlayer.Backpack
+            end
+        end
+    end
+    for aiefhiewhwf,dvjbvj in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+        if dvjbvj:IsA("Tool") then
+            if dvjbvj.Name == toolselcted == false then
+                dvjbvj:Destroy()
+            end
+        end
+    end
+    for ttjtjutjutjjtj,ddvdvdsvdfbrnytytmvdv in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+        if ddvdvdsvdfbrnytytmvdv:IsA("Tool") then
+            if ddvdvdsvdfbrnytytmvdv.name == toolselcted == false then
+                ddvdvdsvdfbrnytytmvdv:Destroy()
+            end
+        end
+    end
+    for findin,toollel in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+        if toollel:IsA("Tool") then
+            if toollel.Name == toolselcted then
+                toollllfoun2 = true
+                for basc,aijfw in pairs(toollel:GetDescendants()) do
+                    if aijfw.Name == "Handle" then
+                        aijfw.Name = "Hâ�¥aâ�¥nâ�¥dâ�¥lâ�¥e"
+                        toollel.Parent = game.Players.LocalPlayer.Backpack
+                        toollel.Parent = game.Players.LocalPlayer.Character
+                        tollllahhhh = toollel
+                        task.wait()
+                    end
+                end
+            else
+                toollllfoun2 = false
+            end
+        end
+    end
+    for fiifi,toollll in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+        if toollll:IsA("Tool") then
+            if toollll.Name == toolselcted then
+                toollllfoun = true
+                for nana,jjsjsj in pairs(toollll:GetDescendants()) do
+                    if jjsjsj.Name == "Handle" then
+                        toollll.Parent = game.Players.LocalPlayer.Character
+                        wait()
+                        jjsjsj.Name = "Hâ�¥aâ�¥nâ�¥dâ�¥lâ�¥e"
+                        toollll.Parent = game.Players.LocalPlayer.Backpack
+                        toollll.Parent = game.Players.LocalPlayer.Character
+                        toolllffel = toollll
+                    end
+                end
+            else
+                toollllfoun = false
+            end
+        end
+    end
+    if toollllfoun == true then
+        if game.Players.LocalPlayer.Character:FindFirstChild(toolllffel) == nil then
+            toollllfoun = false
+        end
+        repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild(toolllffel) == nil
+        toollllfoun = false
+    end
+    if toollllfoun2 == true then
+        if game.Players.LocalPlayer.Character:FindFirstChild(tollllahhhh) == nil then
+            toollllfoun2 = false
+        end
+        repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild(tollllahhhh) == nil
+        toollllfoun2 = false
+    end
+    wait(0.1)
+    for m=1, dupeamot do
+        if duping == false then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = false
+            return
+        end
+        if game:GetService("Workspace"):FindFirstChild("Camera") then
+            game:GetService("Workspace"):FindFirstChild("Camera"):Destroy()
+        end
+        if m <= dupeamot then
+            game:GetService("StarterGui"):SetCore("SendNotification",{Title="تضاعف",Text="لديك ".." "..m.." ".."نسخة مكررة من ".." "..toolselcted.."!",Duration=0.5})
+        elseif m == dupeamot or m >= dupeamot - 1 then
+            game:GetService("StarterGui"):SetCore("SendNotification",{Title="تضاعف",Text="لديك ".." "..m.." ".."نسخة مكررة من ".." "..toolselcted.."!".." ".."تم الانتهاء من التضاعف، يرجى الانتظار قليلاً لإعادة الظهور.",Duration=4})
+        end
+        local args = { [1] = "PickingTools", [2] = toolselcted }
+        picktoolremote:InvokeServer(unpack(args))
+        game:GetService("Players").LocalPlayer.Backpack:WaitForChild(toolselcted).Parent = game.Players.LocalPlayer.Character
+        if duping == false then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = false
+            return
+        end
+        wait()
+        game:GetService("Players").LocalPlayer.Character[toolselcted]:FindFirstChild("Handle").Name = "Hâ�¥aâ�¥nâ�¥dâ�¥lâ�¥e"
+        game:GetService("Players").LocalPlayer.Character:FindFirstChild(toolselcted).Parent = game.Players.LocalPlayer.Backpack
+        game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(toolselcted).Parent = game.Players.LocalPlayer.Character
+        repeat
+            if game:GetService("Workspace"):FindFirstChild("Camera") then
+                game:GetService("Workspace"):FindFirstChild("Camera"):Destroy()
+            end
+            task.wait()
+        until game:GetService("Players").LocalPlayer.Character:FindFirstChild(toolselcted) == nil
+    end
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = false
+    repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") == nil
+    repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldcf
+    wait()
+    duping = false
+    for wwefef,weifwwe in pairs(game.Players:GetPlayers()) do
+        if weifwwe.Name == game.Players.LocalPlayer.Name == false then
+            ewoifjwoifjiwo = wwefef
+        end
+    end
+    for m=1,ewoifjwoifjiwo do
+        game.Players.LocalPlayer.Backpack.Couch.Name = "couch"..m
+    end
+    wait()
+    for weofefawd,iwiejguiwg in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if iwiejguiwg.Name == "couch"..weofefawd then
+            iwiejguiwg.Handle.Name = "Handle "
+        end
+    end
+    wait(0.2)
+    local function bring(skjdfuwiruwg,woiejewg)
+        if woiejewg == nil == false then
+            game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg]:FindFirstChild("Seat1").Disabled = true
+            game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg]:FindFirstChild("Seat2").Disabled = true
+            game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+            tet = Instance.new("BodyVelocity", game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg]:FindFirstChild("Handle "))
+            tet.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+            tet.P = 1250
+            tet.Velocity = Vector3.new(0,0,0)
+            tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+            repeat
+                for m=1,35 do
+                    local pos = {x=0, y=0, z=0}
+                    pos.x = woiejewg.Character.HumanoidRootPart.Position.X
+                    pos.y = woiejewg.Character.HumanoidRootPart.Position.Y
+                    pos.z = woiejewg.Character.HumanoidRootPart.Position.Z
+                    pos.x = pos.x + woiejewg.Character.HumanoidRootPart.Velocity.X / 2
+                    pos.y = pos.y + woiejewg.Character.HumanoidRootPart.Velocity.Y / 2
+                    pos.z = pos.z + woiejewg.Character.HumanoidRootPart.Velocity.Z / 2
+                    game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg]:FindFirstChild("Seat1").CFrame = CFrame.new(Vector3.new(pos.x,pos.y,pos.z)) * CFrame.new(-2,2,0)
+                    task.wait()
+                end
+                game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+                wait()
+                game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg]:FindFirstChild("Handle ").Name = "Handle"
+                wait(0.2)
+                game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+                wait()
+                game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+                game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg].Handle.Name = "Handle "
+                wait(0.2)
+                game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+                tet = Instance.new("BodyVelocity", game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg]:FindFirstChild("Seat1"))
+                tet.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+                tet.P = 1250
+                tet.Velocity = Vector3.new(0,0,0)
+                tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+            until woiejewg.Character.Humanoid.Sit == true
+            wait()
+            game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg]:FindFirstChild("Handle "):FindFirstChild("#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"):Destroy()
+            game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+            wait()
+            game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg]:FindFirstChild("Handle ").Name = "Handle"
+            wait(0.2)
+            game.Players.LocalPlayer.Backpack["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+            wait()
+            game.Players.LocalPlayer.Character["couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+        end
+    end
+    for mwef,weuerg in pairs(game.Players:GetPlayers()) do
+        if weuerg.Name == game.Players.LocalPlayer.Name == false then
+            spawn(function() bring(mwef,weuerg) end)
+        end
+    end
+end
+
+local function KillAllCouch()
+    local args = { [1] = "ClearAllTools" }
+    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+    wait(0.2)
+    local initialPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(5000, 10, 5000)
+    part.Position = Vector3.new(0, -500, 0)
+    part.Anchored = true
+    part.CanCollide = true
+    part.Parent = game.Workspace
+    task.wait()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, -500, 0)
+    wait(2)
+    toolselcted = "Couch"
+    dupeamot = 25
+    picktoolremote = game:GetService("ReplicatedStorage").RE:FindFirstChild("1Too1l")
+    cleartoolremote = game:GetService("ReplicatedStorage").RE:FindFirstChild("1Clea1rTool1s")
+    game:GetService("StarterGui"):SetCore("SendNotification",{Title="تضاعف",Text="لا تضغط على أي شيء", Button1 = "فهمت",Duration=5})
+    game:GetService("StarterGui"):SetCore("SendNotification",{Title="تضاعف",Text="انتظر", Button1 = "فهمت",Duration=5})
+    duping = true
+    oldcf = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+    if game.Players.LocalPlayer.Character.Humanoid.Sit == true then
+        task.wait()
+        game.Players.LocalPlayer.Character.Humanoid.Sit = false
+    end
+    wait(0.1)
+    if game:GetService("Workspace"):FindFirstChild("Camera") then
+        game:GetService("Workspace"):FindFirstChild("Camera"):Destroy()
+    end
+    for m=1,2 do
+        task.wait()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(999999999.414, -490, 999999999.414, 0.974360406, -0.175734088, 0.14049761, -0.133441404, 0.0514053069, 0.989722729, -0.181150302, -0.983094692, 0.0266370922)
+    end
+    task.wait(0.2)
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = true
+    wait(0.5)
+    for aidj,afh in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+        if afh.Name == toolselcted == false then
+            if afh:IsA("Tool") then
+                afh.Parent = game.Players.LocalPlayer.Backpack
+            end
+        end
+    end
+    for aiefhiewhwf,dvjbvj in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+        if dvjbvj:IsA("Tool") then
+            if dvjbvj.Name == toolselcted == false then
+                dvjbvj:Destroy()
+            end
+        end
+    end
+    for ttjtjutjutjjtj,ddvdvdsvdfbrnytytmvdv in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+        if ddvdvdsvdfbrnytytmvdv:IsA("Tool") then
+            if ddvdvdsvdfbrnytytmvdv.Name == toolselcted == false then
+                ddvdvdsvdfbrnytytmvdv:Destroy()
+            end
+        end
+    end
+    for findin,toollel in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+        if toollel:IsA("Tool") then
+            if toollel.Name == toolselcted then
+                toollllfoun2 = true
+                for basc,aijfw in pairs(toollel:GetDescendants()) do
+                    if aijfw.Name == "Handle" then
+                        aijfw.Name = "HÃ¢Â�Â¥aÃ¢Â�Â¥nÃ¢Â�Â¥dÃ¢Â�Â¥lÃ¢Â�Â¥e"
+                        toollel.Parent = game.Players.LocalPlayer.Backpack
+                        toollel.Parent = game.Players.LocalPlayer.Character
+                        tollllahhhh = toollel
+                        task.wait()
+                    end
+                end
+            else
+                toollllfoun2 = false
+            end
+        end
+    end
+    for fiifi,toollll in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+        if toollll:IsA("Tool") then
+            if toollll.Name == toolselcted then
+                toollllfoun = true
+                for nana,jjsjsj in pairs(toollll:GetDescendants()) do
+                    if jjsjsj.Name == "Handle" then
+                        toollll.Parent = game.Players.LocalPlayer.Character
+                        wait()
+                        jjsjsj.Name = "HÃ¢Â�Â¥aÃ¢Â�Â¥nÃ¢Â�Â¥dÃ¢Â�Â¥lÃ¢Â�Â¥e"
+                        toollll.Parent = game.Players.LocalPlayer.Backpack
+                        toollll.Parent = game.Players.LocalPlayer.Character
+                        toolllffel = toollll
+                    end
+                end
+            else
+                toollllfoun = false
+            end
+        end
+    end
+    if toollllfoun == true then
+        if game.Players.LocalPlayer.Character:FindFirstChild(toolllffel) == nil then
+            toollllfoun = false
+        end
+        repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild(toolllffel) == nil
+        toollllfoun = false
+    end
+    if toollllfoun2 == true then
+        if game.Players.LocalPlayer.Character:FindFirstChild(tollllahhhh) == nil then
+            toollllfoun2 = false
+        end
+        repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild(tollllahhhh) == nil
+        toollllfoun2 = false
+    end
+    wait(0.1)
+    for m=1, dupeamot do
+        if duping == false then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = false
+            return
+        end
+        if game:GetService("Workspace"):FindFirstChild("Camera") then
+            game:GetService("Workspace"):FindFirstChild("Camera"):Destroy()
+        end
+        if m <= dupeamot then
+            game:GetService("StarterGui"):SetCore("SendNotification",{Title="سكربت التضاعف",Text="الآن لديك ".." "..m.." ".."نسخة مكررة من ".." "..toolselcted.."!",Duration=0.5})
+        elseif m == dupeamot or m >= dupeamot - 1 then
+            game:GetService("StarterGui"):SetCore("SendNotification",{Title="سكربت التضاعف",Text="الآن لديك ".." "..m.." ".."نسخة مكررة من ".." "..toolselcted.."!".." ".."يتم تضاعف الأدوات، لا تضغط على أي شيء يا صاح",Duration=4})
+        end
+        local args = { [1] = "PickingTools", [2] = toolselcted }
+        picktoolremote:InvokeServer(unpack(args))
+        game:GetService("Players").LocalPlayer.Backpack:WaitForChild(toolselcted).Parent = game.Players.LocalPlayer.Character
+        if duping == false then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = false
+            return
+        end
+        wait()
+        game:GetService("Players").LocalPlayer.Character[toolselcted]:FindFirstChild("Handle").Name = "HÃ¢Â�Â¥aÃ¢Â�Â¥nÃ¢Â�Â¥dÃ¢Â�Â¥lÃ¢Â�Â¥e"
+        game:GetService("Players").LocalPlayer.Character:FindFirstChild(toolselcted).Parent = game.Players.LocalPlayer.Backpack
+        game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(toolselcted).Parent = game.Players.LocalPlayer.Character
+        repeat
+            if game:GetService("Workspace"):FindFirstChild("Camera") then
+                game:GetService("Workspace"):FindFirstChild("Camera"):Destroy()
+            end
+            task.wait()
+        until game:GetService("Players").LocalPlayer.Character:FindFirstChild(toolselcted) == nil
+    end
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = false
+    repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") == nil
+    repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldcf
+    wait()
+    duping = false
+    for wwefef,weifwwe in pairs(game.Players:GetPlayers()) do
+        if weifwwe.Name == game.Players.LocalPlayer.Name == false then
+            ewoifjwoifjiwo = wwefef
+        end
+    end
+    for m=1,ewoifjwoifjiwo do
+        game.Players.LocalPlayer.Backpack.Couch.Name = "Zyronis Couch"..m
+    end
+    wait()
+    for weofefawd,iwiejguiwg in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if iwiejguiwg.Name == "Zyronis Couch"..weofefawd then
+            iwiejguiwg.Handle.Name = "Handle "
+        end
+    end
+    wait(0.2)
+    local function bring(skjdfuwiruwg,woiejewg)
+        if woiejewg == nil == false then
+            game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Seat1").Disabled = true
+            game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Seat2").Disabled = true
+            game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+            tet = Instance.new("BodyVelocity", game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Handle "))
+            tet.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+            tet.P = 1250
+            tet.Velocity = Vector3.new(0,0,0)
+            tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+            repeat
+                for m=1,35 do
+                    local pos = {x=0, y=0, z=0}
+                    pos.x = woiejewg.Character.HumanoidRootPart.Position.X
+                    pos.y = woiejewg.Character.HumanoidRootPart.Position.Y
+                    pos.z = woiejewg.Character.HumanoidRootPart.Position.Z
+                    pos.x = pos.x + woiejewg.Character.HumanoidRootPart.Velocity.X / 2
+                    pos.y = pos.y + woiejewg.Character.HumanoidRootPart.Velocity.Y / 2
+                    pos.z = pos.z + woiejewg.Character.HumanoidRootPart.Velocity.Z / 2
+                    game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Seat1").CFrame = CFrame.new(Vector3.new(pos.x,pos.y,pos.z)) * CFrame.new(-2,2,0)
+                    task.wait()
+                end
+                game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+                wait()
+                game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Handle ").Name = "Handle"
+                wait(0.2)
+                game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+                wait()
+                game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+                game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg].Handle.Name = "Handle "
+                wait(0.2)
+                game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+                tet = Instance.new("BodyVelocity", game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Seat1"))
+                tet.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+                tet.P = 1250
+                tet.Velocity = Vector3.new(0,0,0)
+                tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
+            until woiejewg.Character.Humanoid.Sit == true
+            wait()
+            game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Handle "):FindFirstChild("#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"):Destroy()
+            game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+            wait()
+            game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg]:FindFirstChild("Handle ").Name = "Handle"
+            wait(0.2)
+            game.Players.LocalPlayer.Backpack["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Character
+            wait()
+            game.Players.LocalPlayer.Character["Zyronis Couch"..skjdfuwiruwg].Parent = game.Players.LocalPlayer.Backpack
+        end
+    end
+    for mwef,weuerg in pairs(game.Players:GetPlayers()) do
+        if weuerg.Name == game.Players.LocalPlayer.Name == false then
+            spawn(function() bring(mwef,weuerg) end)
+        end
+    end
+    task.delay(14, function()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(initialPosition)
+    end)
+    task.delay(14.1, function()
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+    end)
+end
+
+local function FlingBallAll()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            FlingBall(plr)
+            task.wait(0.5)
+        end
+    end
+end
+
+-- ========== دوال القتل بالنقر ==========
+local function ClickFlingDoors()
+    local BlackHole = Instance.new("Part")
+    BlackHole.Size = Vector3.new(100000, 100000, 100000)
+    BlackHole.Transparency = 1
+    BlackHole.Anchored = true
+    BlackHole.CanCollide = false
+    BlackHole.Name = "BlackHoleTarget"
+    BlackHole.Parent = workspace
+    local baseAttachment = Instance.new("Attachment")
+    baseAttachment.Name = "Luscaa_BlackHoleAttachment"
+    baseAttachment.Parent = BlackHole
+    RunService.Heartbeat:Connect(function()
+        BlackHole.CFrame = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.CFrame or CFrame.new()
+    end)
+    local ControlledDoors = {}
+    local function SetupPart(part)
+        if not part:IsA("BasePart") or part.Anchored or not string.find(part.Name, "Door") then return end
+        if part:FindFirstChild("Luscaa_Attached") then return end
+        part.CanCollide = false
+        for _, obj in ipairs(part:GetChildren()) do
+            if obj:IsA("AlignPosition") or obj:IsA("Torque") or obj:IsA("Attachment") then
+                obj:Destroy()
+            end
+        end
+        local marker = Instance.new("BoolValue", part)
+        marker.Name = "Luscaa_Attached"
+        local a1 = Instance.new("Attachment", part)
+        local align = Instance.new("AlignPosition", part)
+        align.Attachment0 = a1
+        align.Attachment1 = baseAttachment
+        align.MaxForce = 1e20
+        align.MaxVelocity = math.huge
+        align.Responsiveness = 99999
+        local torque = Instance.new("Torque", part)
+        torque.Attachment0 = a1
+        torque.RelativeTo = Enum.ActuatorRelativeTo.World
+        torque.Torque = Vector3.new(
+            math.random(-10e5, 10e5) * 10000,
+            math.random(-10e5, 10e5) * 10000,
+            math.random(-10e5, 10e5) * 10000
+        )
+        table.insert(ControlledDoors, {Part = part, Align = align})
+    end
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and string.find(obj.Name, "Door") then
+            SetupPart(obj)
+        end
+    end
+    workspace.DescendantAdded:Connect(function(obj)
+        if obj:IsA("BasePart") and string.find(obj.Name, "Door") then
+            SetupPart(obj)
+        end
+    end)
+    local function FlingPlayer(player)
+        local char = player.Character
+        if not char then return end
+        local targetHRP = char:FindFirstChild("HumanoidRootPart")
+        if not targetHRP then return end
+        local targetAttachment = targetHRP:FindFirstChild("SHNMAX_TargetAttachment")
+        if not targetAttachment then
+            targetAttachment = Instance.new("Attachment", targetHRP)
+            targetAttachment.Name = "SHNMAX_TargetAttachment"
+        end
+        for _, data in ipairs(ControlledDoors) do
+            if data.Align then
+                data.Align.Attachment1 = targetAttachment
+            end
+        end
+        local start = tick()
+        while tick() - start < 5 do
+            if targetHRP.Velocity.Magnitude >= 20 then break end
+            RunService.Heartbeat:Wait()
+        end
+        for _, data in ipairs(ControlledDoors) do
+            if data.Align then
+                data.Align.Attachment1 = baseAttachment
+            end
+        end
+    end
+    UserInputService.TouchTap:Connect(function(touchPositions, processed)
+        if processed then return end
+        local pos = touchPositions[1]
+        local camera = workspace.CurrentCamera
+        local unitRay = camera:ScreenPointToRay(pos.X, pos.Y)
+        local raycast = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000)
+        if raycast and raycast.Instance then
+            local hit = raycast.Instance
+            local player = Players:GetPlayerFromCharacter(hit:FindFirstAncestorOfClass("Model"))
+            if player and player ~= LocalPlayer then
+                FlingPlayer(player)
+            end
+        end
+    end)
+end
+
+local function ClickFlingCouchTool()
+    local NOME_FERRAMENTA = "تطاير بالكنبة (أداة)"
+    local ferramentaEquipada = false
+    local mochila = LocalPlayer:WaitForChild("Backpack")
+    if not mochila:FindFirstChild(NOME_FERRAMENTA) then
+        local ferramenta = Instance.new("Tool")
+        ferramenta.Name = NOME_FERRAMENTA
+        ferramenta.RequiresHandle = false
+        ferramenta.CanBeDropped = false
+        ferramenta.Equipped:Connect(function() ferramentaEquipada = true end)
+        ferramenta.Unequipped:Connect(function() ferramentaEquipada = false end)
+        ferramenta.Parent = mochila
+    end
+    local function jogarComSofa(alvo)
+        if not ferramentaEquipada then return end
+        if not alvo or not alvo.Character or alvo == LocalPlayer then return end
+        local jogando = true
+        local raiz = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local alvoRaiz = alvo.Character and alvo.Character:FindFirstChild("HumanoidRootPart")
+        if not raiz or not alvoRaiz then return end
+        local boneco = LocalPlayer.Character
+        local humano = boneco:FindFirstChildOfClass("Humanoid")
+        local posOriginal = raiz.CFrame
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer("ClearAllTools")
+        task.wait(0.2)
+        ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+        task.wait(0.3)
+        local sofa = LocalPlayer.Backpack:FindFirstChild("Couch")
+        if sofa then sofa.Parent = boneco end
+        task.wait(0.1)
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+        task.wait(0.25)
+        workspace.FallenPartsDestroyHeight = 0/0
+        local forca = Instance.new("BodyVelocity")
+        forca.Name = "ForcaJogada"
+        forca.Velocity = Vector3.new(9e8, 9e8, 9e8)
+        forca.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        forca.Parent = raiz
+        humano:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+        humano.PlatformStand = false
+        cam.CameraSubject = alvo.Character:FindFirstChild("Head") or alvoRaiz or humano
+        task.spawn(function()
+            local angulo = 0
+            while jogando and alvo and alvo.Character and alvo.Character:FindFirstChildOfClass("Humanoid") do
+                local alvoHum = alvo.Character:FindFirstChildOfClass("Humanoid")
+                if alvoHum.Sit then break end
+                angulo = angulo + 50
+                local hrp = alvo.Character.HumanoidRootPart
+                local pos = hrp.Position + hrp.Velocity / 1.5
+                raiz.CFrame = CFrame.new(pos) * CFrame.Angles(math.rad(angulo), 0, 0)
+                raiz.Velocity = Vector3.new(9e8, 9e8, 9e8)
+                raiz.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+                task.wait()
+            end
+            jogando = false
+            forca:Destroy()
+            humano:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            humano.PlatformStand = false
+            raiz.CFrame = posOriginal
+            cam.CameraSubject = humano
+            for _, p in pairs(boneco:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.Velocity = Vector3.zero
+                    p.RotVelocity = Vector3.zero
+                end
+            end
+            humano:UnequipTools()
+            ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+        end)
+        while jogando do task.wait() end
+    end
+    UserInputService.TouchTap:Connect(function(toques, processado)
+        if processado or not ferramentaEquipada then return end
+        local pos = toques[1]
+        local raio = cam:ScreenPointToRay(pos.X, pos.Y)
+        local acerto = workspace:Raycast(raio.Origin, raio.Direction * 1000)
+        if acerto and acerto.Instance then
+            local alvo = Players:GetPlayerFromCharacter(acerto.Instance:FindFirstAncestorOfClass("Model"))
+            if alvo and alvo ~= LocalPlayer then
+                jogarComSofa(alvo)
+            end
+        end
+    end)
+end
+
+local function ClickFlingBallTool()
+    local NOME_FERRAMENTA = "تطيير بالكرة (أداة)"
+    local ferramentaEquipada = false
+    local mochila = LocalPlayer:WaitForChild("Backpack")
+    if not mochila:FindFirstChild(NOME_FERRAMENTA) then
+        local ferramenta = Instance.new("Tool")
+        ferramenta.Name = NOME_FERRAMENTA
+        ferramenta.RequiresHandle = false
+        ferramenta.CanBeDropped = false
+        ferramenta.Equipped:Connect(function() ferramentaEquipada = true end)
+        ferramenta.Unequipped:Connect(function() ferramentaEquipada = false end)
+        ferramenta.Parent = mochila
+    end
+    UserInputService.TouchTap:Connect(function(toques, processado)
+        if not ferramentaEquipada or processado then return end
+        local pos = toques[1]
+        local raio = cam:ScreenPointToRay(pos.X, pos.Y)
+        local hit = workspace:Raycast(raio.Origin, raio.Direction * 1000)
+        if hit and hit.Instance then
+            local modelo = hit.Instance:FindFirstAncestorOfClass("Model")
+            local jogador = Players:GetPlayerFromCharacter(modelo)
+            if jogador and jogador ~= LocalPlayer then
+                FlingBall(jogador)
+            end
+        end
+    end)
+end
+
+local function ClickKillCouchTool()
+    local NOME_FERRAMENTA = "قتل بالكنبة (أداة)"
+    local ferramentaEquipada = false
+    local nomeAlvo = nil
+    local loopTP = nil
+    local sofaEquipado = false
+    local base = nil
+    local posInicial = nil
+    local raiz = nil
+    local mochila = LocalPlayer:WaitForChild("Backpack")
+    if not mochila:FindFirstChild(NOME_FERRAMENTA) then
+        local ferramenta = Instance.new("Tool")
+        ferramenta.Name = NOME_FERRAMENTA
+        ferramenta.RequiresHandle = false
+        ferramenta.CanBeDropped = false
+        ferramenta.Equipped:Connect(function() ferramentaEquipada = true end)
+        ferramenta.Unequipped:Connect(function()
+            ferramentaEquipada = false
+            nomeAlvo = nil
+            if loopTP then loopTP:Disconnect() loopTP = nil end
+            if sofaEquipado then
+                local boneco = LocalPlayer.Character
+                if boneco then
+                    local sofa = boneco:FindFirstChild("Couch")
+                    if sofa then sofa.Parent = LocalPlayer.Backpack end
+                    sofaEquipado = false
+                end
+            end
+            if base then base:Destroy() base = nil end
+            if posInicial and raiz then raiz.CFrame = posInicial end
+        end)
+        ferramenta.Parent = mochila
+    end
+    function limparSofa()
+        if loopTP then loopTP:Disconnect() loopTP = nil end
+        if sofaEquipado then
+            local boneco = LocalPlayer.Character
+            if boneco then
+                local sofa = boneco:FindFirstChild("Couch")
+                if sofa then sofa.Parent = LocalPlayer.Backpack end
+                sofaEquipado = false
+            end
+        end
+        if base then base:Destroy() base = nil end
+        local humano = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humano then
+            humano:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+            humano:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+        if posInicial and raiz then
+            raiz.CFrame = posInicial
+            posInicial = nil
+        end
+    end
+    function pegarSofa()
+        local boneco = LocalPlayer.Character
+        if not boneco then return end
+        if not LocalPlayer.Backpack:FindFirstChild("Couch") and not boneco:FindFirstChild("Couch") then
+            ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+            task.wait(0.1)
+        end
+        local sofa = LocalPlayer.Backpack:FindFirstChild("Couch") or boneco:FindFirstChild("Couch")
+        if sofa then
+            sofa.Parent = boneco
+            sofaEquipado = true
+        end
+    end
+    function posAleatoriaAbaixo(boneco)
+        local rp = boneco:FindFirstChild("HumanoidRootPart")
+        if not rp then return Vector3.new() end
+        local offset = Vector3.new(math.random(-2, 2), -5.1, math.random(-2, 2))
+        return rp.Position + offset
+    end
+    function tpAbaixo(alvo)
+        if not alvo or not alvo.Character or not alvo.Character:FindFirstChild("HumanoidRootPart") then return end
+        local meuBoneco = LocalPlayer.Character
+        local minhaRaiz = meuBoneco and meuBoneco:FindFirstChild("HumanoidRootPart")
+        local humano = meuBoneco and meuBoneco:FindFirstChildOfClass("Humanoid")
+        if not minhaRaiz or not humano then return end
+        humano:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+        if not base then
+            base = Instance.new("Part")
+            base.Size = Vector3.new(10, 1, 10)
+            base.Anchored = true
+            base.CanCollide = true
+            base.Transparency = 0.5
+            base.Parent = workspace
+        end
+        local destino = posAleatoriaAbaixo(alvo.Character)
+        base.Position = destino
+        minhaRaiz.CFrame = CFrame.new(destino)
+        humano:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+    end
+    function arremessarComSofa(alvo)
+        if not alvo then return end
+        nomeAlvo = alvo.Name
+        local boneco = LocalPlayer.Character
+        if not boneco then return end
+        posInicial = boneco:FindFirstChild("HumanoidRootPart") and boneco.HumanoidRootPart.CFrame
+        raiz = boneco:FindFirstChild("HumanoidRootPart")
+        pegarSofa()
+        loopTP = RunService.Heartbeat:Connect(function()
+            local alvoAtual = Players:FindFirstChild(nomeAlvo)
+            if not alvoAtual or not alvoAtual.Character or not alvoAtual.Character:FindFirstChild("Humanoid") then
+                limparSofa()
+                return
+            end
+            tpAbaixo(alvoAtual)
+        end)
+        task.spawn(function()
+            local alvoAtual = Players:FindFirstChild(nomeAlvo)
+            while alvoAtual and alvoAtual.Character and alvoAtual.Character:FindFirstChild("Humanoid") do
+                task.wait(0.05)
+                if alvoAtual.Character.Humanoid.SeatPart then
+                    local buraco = CFrame.new(265.46, -450.83, -59.93)
+                    alvoAtual.Character.HumanoidRootPart.CFrame = buraco
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = buraco
+                    task.wait(0.4)
+                    limparSofa()
+                    task.wait(0.2)
+                    if posInicial then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = posInicial
+                    end
+                    break
+                end
+            end
+        end)
+    end
+    UserInputService.TouchTap:Connect(function(toques, processado)
+        if not ferramentaEquipada or processado then return end
+        local pos = toques[1]
+        local raio = cam:ScreenPointToRay(pos.X, pos.Y)
+        local hit = workspace:Raycast(raio.Origin, raio.Direction * 1000)
+        if hit and hit.Instance then
+            local modelo = hit.Instance:FindFirstAncestorOfClass("Model")
+            local jogador = Players:GetPlayerFromCharacter(modelo)
+            if jogador and jogador ~= LocalPlayer then
+                arremessarComSofa(jogador)
+            end
+        end
+    end)
+end
+
+-- ========== عناصر واجهة التبويب (تخريب على اللاعبين) ==========
+-- القائمة المنسدلة لاختيار اللاعب
+local killDropdown = TrollTab:AddDropdown({
+    Name = "اختيار اللاعب",
+    Options = getPlayerList(),
+    Default = "",
+    Callback = function(value)
+        selectedPlayerName = value
+        getgenv().Target = value
+        print("تم اختيار اللاعب: " .. tostring(value))
+    end
+})
+
+-- زر تحديث القائمة
+TrollTab:AddButton({
+    Name = "تحديث قائمة اللاعبين",
+    Callback = function()
+        local newList = getPlayerList()
+        killDropdown:Set(newList)
+        if selectedPlayerName and not Players:FindFirstChild(selectedPlayerName) then
+            selectedPlayerName = nil
+            getgenv().Target = nil
+            killDropdown:SetValue("")
+            print("تم إعادة تعيين الاختيار، اللاعب غير موجود.")
+        end
+    end
+})
+
+-- زر الانتقال إلى اللاعب
+TrollTab:AddButton({
+    Name = "الانتقال إلى اللاعب",
+    Callback = function()
+        if not selectedPlayerName then
+            print("لم يتم اختيار لاعب")
+            return
+        end
+        local target = Players:FindFirstChild(selectedPlayerName)
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = target.Character.HumanoidRootPart.CFrame
+            end
+        else
+            print("اللاعب غير موجود أو ليس لديه شخصية")
+        end
+    end
+})
+
+-- تبديل تتبع اللاعب (تجسس)
+TrollTab:AddToggle({
+    Name = "تتبع اللاعب (تجسس)",
+    Default = false,
+    Callback = function(value)
+        if value then
+            local target = Players:FindFirstChild(selectedPlayerName)
+            if target and target.Character and target.Character:FindFirstChild("Humanoid") then
+                cam.CameraSubject = target.Character.Humanoid
+            end
+        else
+            cam.CameraSubject = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") or nil
+        end
+    end
+})
+
+-- قسم طرق القتل
+TrollTab:AddSection({ Name = "طرق القتل" })
+TrollTab:AddDropdown({
+    Name = "اختيار طريقة القتل",
+    Options = {"باص", "كنبة", "كنبة بدون انتقال للهدف [بيتا]"},
+    Default = "",
+    Callback = function(value)
+        methodKill = value
+        print("تم اختيار الطريقة: " .. value)
+    end
+})
+TrollTab:AddButton({
+    Name = "قتل اللاعب",
+    Callback = function()
+        if not selectedPlayerName then
+            print("لم يتم اختيار لاعب")
+            return
+        end
+        if methodKill == "كنبة" then
+            KillPlayerCouch()
+        elseif methodKill == "كنبة بدون انتقال للهدف [بيتا]" then
+            KillWithCouch()
+        else
+            print("قتل بالباص على " .. selectedPlayerName)
+        end
+    end
+})
+
+-- زر سحب اللاعب
+TrollTab:AddButton({
+    Name = "سحب اللاعب",
+    Callback = function()
+        if not selectedPlayerName then
+            print("لم يتم اختيار لاعب")
+            return
+        end
+        if methodKill == "كنبة" then
+            BringPlayerLLL()
+        elseif methodKill == "كنبة بدون انتقال للهدف [بيتا]" then
+            BringWithCouch()
+        else
+            print("سحب بالباص على " .. selectedPlayerName)
+        end
+    end
+})
+
+-- زر قتل باند البيت
+TrollTab:AddButton({
+    Name = "قتل باند البيت",
+    Callback = function()
+        if not selectedPlayerName then
+            print("لم يتم اختيار لاعب")
+            return
+        end
+        houseBanKill()
+    end
+})
+
+-- تبديل تطاير تلقائي (أوتو فلينج)
+TrollTab:AddToggle({
+    Name = "تطاير تلقائي (أوتو فلينج)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local target = Players:FindFirstChild(selectedPlayerName)
+            if target then
+                StartAutoFling(target)
+            else
+                print("لم يتم اختيار لاعب")
+            end
+        else
+            StopAutoFling()
+        end
+    end
+})
+
+-- زر تطيير بالكرة
+TrollTab:AddButton({
+    Name = "تطيير بالكرة",
+    Callback = function()
+        if selectedPlayerName then
+            local target = Players:FindFirstChild(selectedPlayerName)
+            if target then
+                FlingBall(target)
+            end
+        end
+    end
+})
+
+-- قسم تطيير القوارب
+TrollTab:AddSection({ Name = "تطيير القوارب" })
+TrollTab:AddButton({
+    Name = "تطيير - قارب",
+    Callback = function()
+        if selectedPlayerName then
+            FlingBoat(selectedPlayerName)
+        else
+            print("لم يتم اختيار لاعب")
+        end
+    end
+})
+TrollTab:AddButton({
+    Name = "إيقاف تطيير القارب",
+    Callback = StopBoatFling
+})
+
+-- قسم طرق القتل بالنقر
+TrollTab:AddSection({ Name = "طرق القتل بالنقر" })
+TrollTab:AddButton({
+    Name = "تطاير بالأبواب [بيتا]",
+    Callback = ClickFlingDoors
+})
+TrollTab:AddButton({
+    Name = "تطاير بالكنبة (أداة)",
+    Callback = ClickFlingCouchTool
+})
+TrollTab:AddButton({
+    Name = "تطيير بالكرة (أداة)",
+    Callback = ClickFlingBallTool
+})
+TrollTab:AddButton({
+    Name = "قتل بالكنبة (أداة)",
+    Callback = ClickKillCouchTool
+})
+
+-- قسم طرق القتل الجماعية
+TrollTab:AddSection({ Name = "طرق القتل الجماعية" })
+TrollTab:AddButton({
+    Name = "قتل الجميع بالباص",
+    Callback = KillAllBus
+})
+TrollTab:AddButton({
+    Name = "قتل الجميع باند البيت",
+    Callback = KillAllHouseBan
+})
+TrollTab:AddButton({
+    Name = "تطيير القارب للجميع",
+    Callback = FlingBoatAll
+})
+TrollTab:AddButton({
+    Name = "تطاير تلقائي للجميع",
+    Callback = function()
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                StartAutoFling(plr)
+                task.wait(0.5)
+            end
+        end
+    end
+})
+TrollTab:AddButton({
+    Name = "سحب الجميع بالكنبة [الأفضل]",
+    Callback = BringAllCouch
+})
+TrollTab:AddButton({
+    Name = "قتل الجميع بالكنبة [الأفضل]",
+    Callback = KillAllCouch
+})
+TrollTab:AddButton({
+    Name = "تطيير بالكرة للجميع",
+    Callback = FlingBallAll
+})
+
+-- ==================== تبويب اللاعب المحلي ====================
+local LocalPlayerTab = Window:MakeTab({ Title = "اللاعب المحلي", Icon = "user" })
+
+-- قسم السرعة والجاذبية والقفز
+local SpeedGravitySection = LocalPlayerTab:AddSection({ Name = "السرعة، الجاذبية والقفز" })
+
+-- سرعة اللاعب
+LocalPlayerTab:AddTextBox({
+    Name = "سرعة اللاعب",
+    PlaceholderText = "أدخل السرعة",
+    Callback = function(value)
+        local speed = tonumber(value)
+        if speed and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = speed
+        else
+            warn("سرعة غير صالحة أو الشخصية غير موجودة!")
+        end
+    end
+})
+
+-- إعادة ضبط السرعة
+LocalPlayerTab:AddButton({
+    Name = "إعادة ضبط السرعة",
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        end
+    end
+})
+
+-- قوة القفز
+LocalPlayerTab:AddTextBox({
+    Name = "قوة القفز",
+    PlaceholderText = "أدخل ارتفاع القفز",
+    Callback = function(value)
+        local jumpHeight = tonumber(value)
+        if jumpHeight and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = jumpHeight
+        else
+            warn("ارتفاع قفز غير صالح أو الشخصية غير موجودة!")
+        end
+    end
+})
+
+-- إعادة ضبط القفز
+LocalPlayerTab:AddButton({
+    Name = "إعادة ضبط القفز",
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = 50
+        end
+    end
+})
+
+-- الجاذبية
+LocalPlayerTab:AddTextBox({
+    Name = "الجاذبية",
+    PlaceholderText = "أدخل الجاذبية",
+    Callback = function(value)
+        local gravity = tonumber(value)
+        if gravity then
+            workspace.Gravity = gravity
+        else
+            warn("جاذبية غير صالحة!")
+        end
+    end
+})
+
+-- إعادة ضبط الجاذبية
+LocalPlayerTab:AddButton({
+    Name = "إعادة ضبط الجاذبية",
+    Callback = function()
+        workspace.Gravity = 196.2
+    end
+})
+
+-- ========== قسم تضخيم الدردشة ==========
+local SpamChatSection = LocalPlayerTab:AddSection({ Name = "تضخيم الدردشة" })
+
+-- دالة إرسال الرسائل (متوافقة مع النظام الجديد والقديم)
+local function sendchat(msg)
+    if not msg or msg == "" then return end
+    local tcs = game:GetService("TextChatService")
+    if tcs.ChatVersion == Enum.ChatVersion.LegacyChatService then
+        local success, err = pcall(function()
+            game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents").SayMessageRequest:FireServer(msg, "All")
+        end)
+        if not success then warn("خطأ في إرسال الدردشة: " .. err) end
+    else
+        local chat = tcs.ChatInputBarConfiguration and tcs.ChatInputBarConfiguration.TargetTextChannel
+        if chat then
+            local success, err = pcall(function() chat:SendAsync(msg) end)
+            if not success then warn("خطأ في إرسال الدردشة: " .. err) end
+        end
+    end
+end
+
+local spamMessage = ""
+local spamDelay = 1
+local spamActive = false
+
+-- حقل إدخال الرسالة
+LocalPlayerTab:AddTextBox({
+    Name = "أدخل النص",
+    PlaceholderText = "اكتب الرسالة",
+    Callback = function(text)
+        spamMessage = text
+    end
+})
+
+-- زر إرسال لمرة واحدة
+LocalPlayerTab:AddButton({
+    Name = "إرسال الدردشة",
+    Callback = function()
+        sendchat(spamMessage)
+    end
+})
+
+-- شريط تأخير التضخيم
+LocalPlayerTab:AddSlider({
+    Name = "تأخير التضخيم",
+    Min = 0.4,
+    Max = 10,
+    Default = 1,
+    Increment = 0.1,
+    Callback = function(value)
+        spamDelay = value
+    end
+})
+
+-- تبديل تشغيل التضخيم
+LocalPlayerTab:AddToggle({
+    Name = "تضخيم الدردشة",
+    Default = false,
+    Callback = function(value)
+        spamActive = value
+        if value then
+            task.spawn(function()
+                while spamActive do
+                    sendchat(spamMessage)
+                    task.wait(spamDelay)
+                end
+            end)
+        end
+    end
+})
+
+-- زر تضخيم خاص (رسالة طويلة)
+LocalPlayerTab:AddButton({
+    Name = "تضخيم الدردشة (مخترق)",
+    Callback = function()
+        if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then
+            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync("hi\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rالخادم: تم اختراقه بواسطة Zyronis Hub")
+        else
+            print("لا يمكن استخدام هذه الميزة في هذا الخادم")
+        end
+    end
+})
+
+-- زر مسح الدردشة
+LocalPlayerTab:AddButton({
+    Name = "مسح الدردشة",
+    Callback = function()
+        if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then
+            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync("hi\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rالخادم: تم مسح الدردشة")
+        else
+            print("لا يمكن استخدام هذه الميزة في هذا الخادم")
+        end
+    end
+})
+
+-- ========== قسم الجلوس على الرأس ==========
+local HeadsitSection = LocalPlayerTab:AddSection({ Name = "الجلوس على الرأس (حصان)" })
+
+local selectedHeadPlayer = nil
+local headSitConnection = nil
+
+-- قائمة منسدلة لاختيار اللاعب
+local headSitDropdown = LocalPlayerTab:AddDropdown({
+    Name = "اختر لاعباً",
+    Options = getPlayerList(),
+    Default = "",
+    Callback = function(value)
+        selectedHeadPlayer = value
+    end
+})
+
+-- تبديل الجلوس على الرأس
+LocalPlayerTab:AddToggle({
+    Name = "الجلوس على الرأس (حصان)",
+    Default = false,
+    Callback = function(bool)
+        if not selectedHeadPlayer or selectedHeadPlayer == "" then
+            warn("لم يتم اختيار لاعب للجلوس على رأسه!")
+            return
+        end
+        local targetPlayer = Players:FindFirstChild(selectedHeadPlayer)
+        if bool then
+            if targetPlayer and targetPlayer.Character then
+                local char = LocalPlayer.Character
+                if not char then return end
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                local rootPart = char:FindFirstChild("HumanoidRootPart")
+                if not humanoid or not rootPart then return end
+                humanoid.Sit = true
+                if headSitConnection then headSitConnection:Disconnect() end
+                headSitConnection = RunService.Heartbeat:Connect(function()
+                    if targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") and humanoid.Sit then
+                        local targetHead = targetPlayer.Character.Head
+                        rootPart.CFrame = targetHead.CFrame * CFrame.Angles(0, 0, 0) * CFrame.new(0, 1.6, 0.4)
+                    else
+                        if headSitConnection then
+                            headSitConnection:Disconnect()
+                            headSitConnection = nil
+                            humanoid.Sit = false
+                        end
+                    end
+                end)
+            else
+                warn("اللاعب المختار غير موجود أو ليس لديه شخصية!")
+            end
+        else
+            if headSitConnection then
+                headSitConnection:Disconnect()
+                headSitConnection = nil
+            end
+            local char = LocalPlayer.Character
+            if char then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then humanoid.Sit = false end
+            end
+        end
+    end
+})
+
+-- زر تحديث قائمة اللاعبين للـ Headsit
+LocalPlayerTab:AddButton({
+    Name = "تحديث قائمة اللاعبين",
+    Callback = function()
+        local newList = getPlayerList()
+        headSitDropdown:Set(newList)
+        if selectedHeadPlayer and not Players:FindFirstChild(selectedHeadPlayer) then
+            selectedHeadPlayer = nil
+            headSitDropdown:SetValue("")
+        end
+    end
+})
+
+-- ==================== تبويب Skybox ====================
+local SkyboxTab = Window:MakeTab({ Title = "Skybox", Icon = "cloud" })
+SkyboxTab:AddSection({ "Skybox بواسطة Bazuka" })
+
+-- زر تحميل Skybox الخارجي
+SkyboxTab:AddButton({
+    Name = "Skybox",
+    Callback = function()
+        loadstring(game:HttpGet("https://api.rubis.app/v2/scrap/qZkSict1retkqFIr/raw"))()
+    end
+})
+
+-- ========== Nuke Skybox ==========
+local skyboxEnabled = false
+local skyboxTrack = nil
+local rigidTrack = nil
+local savedNukeBody = {}
+
+local function stopAllAnimations()
+    if rigidTrack then
+        pcall(function() rigidTrack:Stop() rigidTrack:Destroy() end)
+        rigidTrack = nil
+    end
+    if skyboxTrack then
+        pcall(function() skyboxTrack:Stop() skyboxTrack:Destroy() end)
+        skyboxTrack = nil
+    end
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            local animator = humanoid:FindFirstChild("Animator")
+            if animator then
+                for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                    if track.Animation then
+                        local animId = track.Animation.AnimationId
+                        if animId == "rbxassetid://70883871260184" or animId == "rbxassetid://3695333486" then
+                            pcall(function() track:Stop() end)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+SkyboxTab:AddToggle({
+    Name = "Nuke Skybox",
+    Default = false,
+    Callback = function(value)
+        skyboxEnabled = value
+        if value then
+            local player = game.Players.LocalPlayer
+            local character = player.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    local description = humanoid:GetAppliedDescription()
+                    savedNukeBody = {
+                        Torso = description.Torso,
+                        RightArm = description.RightArm,
+                        LeftArm = description.LeftArm,
+                        RightLeg = description.RightLeg,
+                        LeftLeg = description.LeftLeg,
+                        Head = description.Head
+                    }
+                    task.wait(0.2)
+                    local args = { [1] = 123402086843885, [2] = 100839513065432, [3] = 78300682916056, [4] = 86276701020724, [5] = 78409653958165, [6] = 15093053680 }
+                    pcall(function() game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(args) end)
+                    task.wait(0.3)
+                    local newAnim = Instance.new("Animation")
+                    newAnim.AnimationId = "rbxassetid://70883871260184"
+                    skyboxTrack = humanoid:LoadAnimation(newAnim)
+                    skyboxTrack.Priority = Enum.AnimationPriority.Action4
+                    skyboxTrack:Play(0.1, 1, 0.01)
+                    task.wait(0.5)
+                    local plankAnim = Instance.new("Animation")
+                    plankAnim.AnimationId = "rbxassetid://3695333486"
+                    rigidTrack = humanoid:LoadAnimation(plankAnim)
+                    rigidTrack.Priority = Enum.AnimationPriority.Movement
+                    rigidTrack:Play(0.1, 1, 0)
+                end
+            end
+        else
+            stopAllAnimations()
+            task.wait(0.2)
+            if next(savedNukeBody) then
+                local player = game.Players.LocalPlayer
+                local character = player.Character
+                if character then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        local restoreBody = {
+                            [1] = savedNukeBody.Torso,
+                            [2] = savedNukeBody.RightArm,
+                            [3] = savedNukeBody.LeftArm,
+                            [4] = savedNukeBody.RightLeg,
+                            [5] = savedNukeBody.LeftLeg,
+                            [6] = savedNukeBody.Head
+                        }
+                        local args = { [1] = restoreBody }
+                        pcall(function() game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(unpack(args)) end)
+                        savedNukeBody = {}
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- ========== Nuke FlashBack ==========
+local nukeFlashEnabled = false
+local nukeFlashTrack = nil
+local flashRigidTrack = nil
+local savedNukeFlashBody = {}
+
+local function stopFlashAnimations()
+    if flashRigidTrack then
+        pcall(function() flashRigidTrack:Stop() flashRigidTrack:Destroy() end)
+        flashRigidTrack = nil
+    end
+    if nukeFlashTrack then
+        pcall(function() nukeFlashTrack:Stop() nukeFlashTrack:Destroy() end)
+        nukeFlashTrack = nil
+    end
+}
+
+SkyboxTab:AddToggle({
+    Name = "Nuke FlashBack",
+    Default = false,
+    Callback = function(value)
+        nukeFlashEnabled = value
+        if value then
+            local player = game.Players.LocalPlayer
+            local character = player.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    local description = humanoid:GetAppliedDescription()
+                    savedNukeFlashBody = {
+                        Torso = description.Torso,
+                        RightArm = description.RightArm,
+                        LeftArm = description.LeftArm,
+                        RightLeg = description.RightLeg,
+                        LeftLeg = description.LeftLeg,
+                        Head = description.Head
+                    }
+                    task.wait(0.2)
+                    local args = { [1] = 123402086843885, [2] = 100839513065432, [3] = 78300682916056, [4] = 86276701020724, [5] = 78409653958165, [6] = 15093053680 }
+                    pcall(function() game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(args) end)
+                    task.wait(0.3)
+                    local newAnim = Instance.new("Animation")
+                    newAnim.AnimationId = "rbxassetid://70883871260184"
+                    nukeFlashTrack = humanoid:LoadAnimation(newAnim)
+                    nukeFlashTrack.Priority = Enum.AnimationPriority.Action4
+                    nukeFlashTrack:Play(0.1, 1, 1)
+                    task.wait(0.1)
+                    nukeFlashTrack:AdjustSpeed(5)
+                    task.wait(0.3)
+                    local plankAnim = Instance.new("Animation")
+                    plankAnim.AnimationId = "rbxassetid://3695333486"
+                    flashRigidTrack = humanoid:LoadAnimation(plankAnim)
+                    flashRigidTrack.Priority = Enum.AnimationPriority.Movement
+                    flashRigidTrack:Play(0.1, 1, 0)
+                end
+            end
+        else
+            stopFlashAnimations()
+            task.wait(0.2)
+            if next(savedNukeFlashBody) then
+                local player = game.Players.LocalPlayer
+                local character = player.Character
+                if character then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        local restoreBody = {
+                            [1] = savedNukeFlashBody.Torso,
+                            [2] = savedNukeFlashBody.RightArm,
+                            [3] = savedNukeFlashBody.LeftArm,
+                            [4] = savedNukeFlashBody.RightLeg,
+                            [5] = savedNukeFlashBody.LeftLeg,
+                            [6] = savedNukeFlashBody.Head
+                        }
+                        local args = { [1] = restoreBody }
+                        pcall(function() game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(unpack(args)) end)
+                        savedNukeFlashBody = {}
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- ========== أحداث إضافية ==========
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    cleanupCouch()
+    local hum = newCharacter:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.Died:Connect(cleanupCouch)
+    end
+end)
+if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+    LocalPlayer.Character.Humanoid.Died:Connect(cleanupCouch)
+end

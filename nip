@@ -1,0 +1,212 @@
+-- Services
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- [ المتغيرات الأساسية ]
+local targetedPlayer = nil
+local watchedPlayers = {}
+local antiKickActive = false 
+local keepKeywords = {"hair","afro","ponytail","bang","braid","wig","longhair","shorthair","topknot"}
+
+local function lower(s) return (s or ""):lower() end
+local function formatTime(seconds)
+    local mins = math.floor(seconds / 60)
+    local secs = seconds % 60
+    return string.format("%02d:%02d", mins, secs)
+end
+
+local function isHair(acc)
+    if not acc or not acc.Name then return false end
+    for _, kw in ipairs(keepKeywords) do if string.find(lower(acc.Name), kw, 1, true) then return true end end
+    return false
+end
+
+local function simplifyTarget(player)
+    if not player or not player.Character then return end
+    local char = player.Character
+    for _, item in ipairs(char:GetDescendants()) do      
+        if item:IsA("Shirt") or item:IsA("Pants") or item:IsA("ShirtGraphic") or (item:IsA("Decal") and item.Name == "face") then      
+            item.Parent = nil      
+        end      
+    end      
+    for _, acc in ipairs(char:GetChildren()) do      
+        if acc:IsA("Accessory") and not isHair(acc) then acc.Parent = nil end      
+    end
+end
+
+local function MakeDraggable(ui, draghandle)
+    local dragging, dragStart, startPos
+    draghandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = ui.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            ui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function() dragging = false end)
+end
+
+-- [[ 🛡️ إنشاء الواجهة الأساسية ]] --
+local gui = Instance.new("ScreenGui", CoreGui)
+gui.Name = "GOVERNMENT_L_EDITION"
+
+-- زر التشغيل العائم (أبيض غامق مع نص أحمر)
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 100, 0, 60); toggleBtn.Position = UDim2.new(0, 20, 0.5, -30); toggleBtn.Text = "ماركوس L+"; toggleBtn.BackgroundColor3 = Color3.fromRGB(220, 220, 220); toggleBtn.TextColor3 = Color3.fromRGB(255, 0, 0); toggleBtn.Font = Enum.Font.GothamBold; toggleBtn.TextSize = 14; Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0); Instance.new("UIStroke", toggleBtn).Color = Color3.fromRGB(255, 0, 0); MakeDraggable(toggleBtn, toggleBtn)
+
+-- الواجهة الرئيسية
+local main = Instance.new("Frame", gui); main.Size = UDim2.new(0, 350, 0, 420); main.Position = UDim2.new(0.5, -175, 0.5, -210); main.BackgroundColor3 = Color3.fromRGB(255, 255, 255); main.Visible = false; Instance.new("UIStroke", main).Color = Color3.fromRGB(255, 0, 0); Instance.new("UICorner", main)
+local topBar = Instance.new("Frame", main); topBar.Size = UDim2.new(1, 0, 0, 50); topBar.BackgroundTransparency = 1; MakeDraggable(main, topBar)
+local titleLabel = Instance.new("TextLabel", topBar); titleLabel.Text = "ماركوس L+"; titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0); titleLabel.Font = Enum.Font.GothamBold; titleLabel.TextSize = 22; titleLabel.Size = UDim2.new(1, 0, 1, 0); titleLabel.BackgroundTransparency = 1
+local grid = Instance.new("Frame", main); grid.Position = UDim2.new(0, 20, 0, 70); grid.Size = UDim2.new(1, -40, 1, -90); grid.BackgroundTransparency = 1; local layout = Instance.new("UIGridLayout", grid); layout.CellPadding = UDim2.new(0, 10, 0, 10); layout.CellSize = UDim2.new(0, 145, 0, 45)
+
+-- [[ 1. واجهة التشليح ]] --
+local koreFrame = Instance.new("Frame", gui); koreFrame.Size = UDim2.new(0, 220, 0, 400); koreFrame.Position = UDim2.new(0.5, 185, 0.5, -200); koreFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255); koreFrame.Visible = false; Instance.new("UICorner", koreFrame); Instance.new("UIStroke", koreFrame).Color = Color3.fromRGB(255, 0, 0)
+local kSearch = Instance.new("TextBox", koreFrame); kSearch.Size = UDim2.new(0, 200, 0, 35); kSearch.Position = UDim2.new(0, 10, 0, 10); kSearch.PlaceholderText = "Search Player.."; kSearch.BackgroundColor3 = Color3.fromRGB(235, 235, 235); kSearch.TextColor3 = Color3.fromRGB(255, 0, 0); kSearch.PlaceholderColor3 = Color3.fromRGB(200, 100, 100); Instance.new("UICorner", kSearch); Instance.new("UIStroke", kSearch).Color = Color3.fromRGB(255, 0, 0)
+local kScroll = Instance.new("ScrollingFrame", koreFrame); kScroll.Size = UDim2.new(1, -10, 1, -60); kScroll.Position = UDim2.new(0, 5, 0, 55); kScroll.BackgroundTransparency = 1; kScroll.CanvasSize = UDim2.new(0, 0, 0, 420); Instance.new("UIListLayout", kScroll).Padding = UDim.new(0, 5); kScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+
+local function createKBtn(txt, func)
+    local b = Instance.new("TextButton", kScroll); b.Size = UDim2.new(1, 0, 0, 40); b.BackgroundColor3 = Color3.fromRGB(225, 225, 225); b.Text = txt; b.TextColor3 = Color3.fromRGB(255, 0, 0); b.Font = Enum.Font.GothamMedium; Instance.new("UICorner", b)
+    local s = Instance.new("UIStroke", b); s.Color = Color3.fromRGB(255, 0, 0); s.Thickness = 0.5
+    b.MouseButton1Click:Connect(func)
+end
+
+createKBtn("❄️ Freeze", function() if targetedPlayer then for _,v in ipairs(targetedPlayer.Character:GetDescendants()) do if v:IsA("BasePart") then v.Anchored = true end end end end)
+createKBtn("🔥 Unfreeze", function() if targetedPlayer then for _,v in ipairs(targetedPlayer.Character:GetDescendants()) do if v:IsA("BasePart") then v.Anchored = false end end end end)
+createKBtn("🧍 Sync Pos", function() if targetedPlayer and LocalPlayer.Character then for _, p in pairs(LocalPlayer.Character:GetDescendants()) do if p:IsA("BasePart") then local t = targetedPlayer.Character:FindFirstChild(p.Name) if t and t:IsA("BasePart") then t.CFrame = p.CFrame end end end end end)
+createKBtn("👕 Dress Up", function() if targetedPlayer and LocalPlayer.Character then local char = targetedPlayer.Character for _, item in ipairs(char:GetChildren()) do if item:IsA("Shirt") or item:IsA("Pants") then item:Destroy() end end if LocalPlayer.Character:FindFirstChildOfClass("Shirt") then LocalPlayer.Character:FindFirstChildOfClass("Shirt"):Clone().Parent = char end if LocalPlayer.Character:FindFirstChildOfClass("Pants") then LocalPlayer.Character:FindFirstChildOfClass("Pants"):Clone().Parent = char end end end)
+createKBtn("🪞 Copy Look", function() if targetedPlayer then local char = LocalPlayer.Character if char and targetedPlayer.Character then for _, v in pairs(char:GetChildren()) do if v:IsA("Shirt") or v:IsA("Pants") or v:IsA("Accessory") then v:Destroy() end end for _, v in pairs(targetedPlayer.Character:GetChildren()) do if v:IsA("Shirt") or v:IsA("Pants") or v:IsA("Accessory") then v:Clone().Parent = char end end end end end)
+createKBtn("✂️ Strip Target", function() if targetedPlayer then simplifyTarget(targetedPlayer) end end)
+
+-- [[ 2. واجهة النقاط ]] --
+local LegendGui = Instance.new("Frame", gui); LegendGui.Size = UDim2.new(0, 42, 0, 105); LegendGui.Position = UDim2.new(0, 100, 0.4, 0); LegendGui.BackgroundTransparency = 1; LegendGui.Visible = false; MakeDraggable(LegendGui, LegendGui)
+local M_Btn = Instance.new("TextButton", LegendGui); M_Btn.Size = UDim2.new(1, 0, 0, 35); M_Btn.BackgroundColor3 = Color3.fromRGB(225, 225, 225); M_Btn.Text = "M"; M_Btn.TextColor3 = Color3.fromRGB(255, 0, 0); M_Btn.Font = Enum.Font.GothamBold; Instance.new("UICorner", M_Btn); Instance.new("UIStroke", M_Btn).Color = Color3.fromRGB(255, 0, 0)
+local PlusBtn = Instance.new("TextButton", LegendGui); PlusBtn.Size = UDim2.new(1, 0, 0, 35); PlusBtn.Position = UDim2.new(0, 0, 0, 35); PlusBtn.BackgroundColor3 = Color3.fromRGB(225, 225, 225); PlusBtn.Text = "+"; PlusBtn.TextColor3 = Color3.fromRGB(255, 0, 0); Instance.new("UICorner", PlusBtn); Instance.new("UIStroke", PlusBtn).Color = Color3.fromRGB(255, 0, 0)
+local MinusBtn = Instance.new("TextButton", LegendGui); MinusBtn.Size = UDim2.new(1, 0, 0, 35); MinusBtn.Position = UDim2.new(0, 0, 0, 70); MinusBtn.BackgroundColor3 = Color3.fromRGB(225, 225, 225); MinusBtn.Text = "-"; MinusBtn.TextColor3 = Color3.fromRGB(255, 0, 0); Instance.new("UICorner", MinusBtn); Instance.new("UIStroke", MinusBtn).Color = Color3.fromRGB(255, 0, 0)
+
+local LMain = Instance.new("Frame", gui); LMain.Size = UDim2.new(0, 340, 0, 260); LMain.Position = UDim2.new(0.5, -170, 0.5, -130); LMain.BackgroundColor3 = Color3.fromRGB(255, 255, 255); LMain.Visible = false; Instance.new("UICorner", LMain); Instance.new("UIStroke", LMain).Color = Color3.fromRGB(255, 0, 0)
+local LSearch = Instance.new("TextBox", LMain); LSearch.Size = UDim2.new(0, 220, 0, 30); LSearch.Position = UDim2.new(0.05, 0, 0.05, 0); LSearch.PlaceholderText = "Player Name.."; LSearch.BackgroundColor3 = Color3.fromRGB(235, 235, 235); LSearch.TextColor3 = Color3.fromRGB(255, 0, 0); LSearch.PlaceholderColor3 = Color3.fromRGB(200, 100, 100); Instance.new("UICorner", LSearch); Instance.new("UIStroke", LSearch).Color = Color3.fromRGB(255, 0, 0)
+local LAdd = Instance.new("TextButton", LMain); LAdd.Size = UDim2.new(0, 80, 0, 30); LAdd.Position = UDim2.new(0.72, 0, 0.05, 0); LAdd.BackgroundColor3 = Color3.fromRGB(225, 225, 225); LAdd.Text = "Add"; LAdd.TextColor3 = Color3.fromRGB(255, 0, 0); Instance.new("UICorner", LAdd); Instance.new("UIStroke", LAdd).Color = Color3.fromRGB(255, 0, 0)
+local LScroll = Instance.new("ScrollingFrame", LMain); LScroll.Size = UDim2.new(0.9, 0, 0.45, 0); LScroll.Position = UDim2.new(0.05, 0, 0.2, 0); LScroll.BackgroundTransparency = 1; Instance.new("UIListLayout", LScroll).Padding = UDim.new(0, 5); LScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+
+-- Anti-Kick Logic
+GuiService.ErrorMessageChanged:Connect(function()
+    if antiKickActive then GuiService:ClearError() end
+end)
+
+local function AddButton(name, callback)
+    local btn = Instance.new("TextButton", grid); btn.Text = name; btn.BackgroundColor3 = Color3.fromRGB(225, 225, 225); btn.TextColor3 = Color3.fromRGB(255, 0, 0); btn.Font = Enum.Font.GothamSemibold; Instance.new("UICorner", btn)
+    Instance.new("UIStroke", btn).Color = Color3.fromRGB(255, 0, 0)
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+AddButton("تشليح ✂️", function() koreFrame.Visible = not koreFrame.Visible end)
+AddButton("نقاط 📊", function() LegendGui.Visible = not LegendGui.Visible end)
+
+local antiBtn = AddButton("مضاد طرد 🛡️ OFF", function() end)
+antiBtn.MouseButton1Click:Connect(function()
+    antiKickActive = not antiKickActive
+    if antiKickActive then
+        antiBtn.Text = "Anti-Kick: ON"
+        antiBtn.TextColor3 = Color3.fromRGB(0, 180, 0) -- أخضر للتشغيل
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.Anchored = true end
+                end
+            end
+        end
+    else
+        antiBtn.Text = "Anti-Kick: OFF"
+        antiBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.Anchored = false end
+                end
+            end
+        end
+    end
+end)
+
+toggleBtn.MouseButton1Click:Connect(function() main.Visible = not main.Visible end)
+M_Btn.MouseButton1Click:Connect(function() LMain.Visible = not LMain.Visible end)
+
+local myStart = os.time()
+task.spawn(function()
+    while true do
+        local MyCard = LMain:FindFirstChild("MyCard")
+        local MyText = MyCard and MyCard:FindFirstChild("MyText")
+        if MyText then MyText.Text = "User: "..LocalPlayer.Name.."\nTime: "..formatTime(os.time() - myStart) end
+        task.wait(1)
+    end
+end)
+
+kSearch:GetPropertyChangedSignal("Text"):Connect(function()
+    local t = lower(kSearch.Text)
+    for _, p in pairs(Players:GetPlayers()) do if lower(p.Name):sub(1,#t) == t then targetedPlayer = p break end end
+end)
+
+LAdd.MouseButton1Click:Connect(function()
+    local t = LSearch.Text:lower()
+    for _, p in pairs(Players:GetPlayers()) do 
+        if string.find(p.Name:lower(), t) then 
+            local function addPlayerToMonitor(pName, pUserId)
+                if watchedPlayers[pName] then return end
+                local card = Instance.new("Frame", LScroll); card.Size = UDim2.new(1, -5, 0, 55); card.BackgroundColor3 = Color3.fromRGB(235, 235, 235); Instance.new("UICorner", card)
+                
+                local img = Instance.new("ImageLabel", card); img.Size = UDim2.new(0, 45, 0, 45); img.Position = UDim2.new(0, 5, 0.5, -22.5); img.Image = "rbxthumb://type=AvatarHeadShot&id="..pUserId.."&w=150&h=150"; Instance.new("UICorner", img).CornerRadius = UDim.new(1, 0); img.BackgroundTransparency = 1;
+                
+                local txt = Instance.new("TextLabel", card); txt.Size = UDim2.new(0.7, 0, 1, 0); txt.Position = UDim2.new(0, 55, 0, 0); txt.TextColor3 = Color3.fromRGB(255, 0, 0); txt.BackgroundTransparency = 1; txt.TextXAlignment = 0; txt.TextSize = 10
+                local s = Instance.new("UIStroke", card); s.Color = Color3.fromRGB(255, 0, 0); s.Thickness = 1
+                watchedPlayers[pName] = {startTime = os.time(), pausedTime = 0, inV = 0, outV = 0, isFrozen = false, stroke = s, isManualOut = false}
+                task.spawn(function()
+                    while card.Parent do
+                        local d = watchedPlayers[pName]
+                        if not d.isFrozen then d.pausedTime = os.time() - d.startTime end
+                        txt.Text = pName.."\nTime: "..formatTime(d.pausedTime).." | IN: "..d.inV.." - OUT: "..d.outV
+                        task.wait(1)
+                    end
+                end)
+            end
+            addPlayerToMonitor(p.Name, p.UserId) 
+        end 
+    end
+    LSearch.Text = ""
+end)
+
+PlusBtn.MouseButton1Click:Connect(function()
+    for _, d in pairs(watchedPlayers) do
+        if not d.isManualOut then
+            d.isFrozen = true; d.outV = d.outV + 1; d.isManualOut = true;
+        else
+            d.isFrozen = false; d.inV = d.inV + 1; d.isManualOut = false; d.startTime = os.time() - d.pausedTime;
+        end
+    end
+end)
+
+MinusBtn.MouseButton1Click:Connect(function()
+    for _, d in pairs(watchedPlayers) do
+        d.isFrozen = false; d.inV = 0; d.outV = 0; d.isManualOut = false; d.startTime = os.time(); d.pausedTime = 0;
+    end
+end)
+
+local MyCard = Instance.new("Frame", LMain); MyCard.Name = "MyCard"; MyCard.Size = UDim2.new(0.9, 0, 0, 60); MyCard.Position = UDim2.new(0.05, 0, 0.7, 0); MyCard.BackgroundColor3 = Color3.fromRGB(230, 230, 230); Instance.new("UICorner", MyCard); Instance.new("UIStroke", MyCard).Color = Color3.fromRGB(255, 0, 0)
+local MyImg = Instance.new("ImageLabel", MyCard); MyImg.Size = UDim2.new(0, 50, 0, 50); MyImg.Position = UDim2.new(0, 5, 0.5, -25); MyImg.Image = "rbxthumb://type=AvatarHeadShot&id="..LocalPlayer.UserId.."&w=150&h=150"; Instance.new("UICorner", MyImg).CornerRadius = UDim.new(1,0); MyImg.BackgroundTransparency = 1;
+local MyText = Instance.new("TextLabel", MyCard); MyText.Name = "MyText"; MyText.Size = UDim2.new(0.7, 0, 1, 0); MyText.Position = UDim2.new(0, 60, 0, 0); MyText.TextColor3 = Color3.fromRGB(255, 0, 0); MyText.BackgroundTransparency = 1; MyText.TextXAlignment = 0; MyText.TextSize = 11
+
+pcall(function()
+    local RE = ReplicatedStorage:WaitForChild("RE")
+    RE:WaitForChild("1RPNam1eColo1r"):FireServer("PickingRPNameColor", Color3.fromRGB(255, 0, 0))
+    RE:WaitForChild("1RPNam1eTex1t"):FireServer("RolePlayName", "ماركوس L+")
+end)
